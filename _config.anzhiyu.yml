@@ -9,6 +9,9 @@ menu:
   专栏:
     C++: /categories/cpp/ || anzhiyu-icon-book
     Linux: /categories/linux/ || anzhiyu-icon-shapes
+    C 语言: /columns/c-language/ || anzhiyu-icon-cube
+    数据结构: /columns/data-structures/ || anzhiyu-icon-shapes
+    设计模式: /columns/design-patterns/ || anzhiyu-icon-lightbulb
   文章:
     归档: /archives/ || anzhiyu-icon-box-archive
     分类: /categories/ || anzhiyu-icon-shapes
@@ -16,6 +19,7 @@ menu:
   关于:
     关于本站: /about/ || anzhiyu-icon-paper-plane
     GitHub: https://github.com/lichermioneT || anzhiyu-icon-github
+  读书: /reading/ || anzhiyu-icon-book-open
 
 # 关闭另一套横向项目导航，避免和上方菜单重复。
 nav:
@@ -428,6 +432,21 @@ home_top:
       shadow: var(--anzhiyu-shadow-green)
       class: green
       icon: anzhiyu-icon-shapes
+    - name: C 语言
+      path: /columns/c-language/
+      shadow: var(--anzhiyu-shadow-red)
+      class: red
+      icon: anzhiyu-icon-cube
+    - name: 数据结构
+      path: /columns/data-structures/
+      shadow: var(--anzhiyu-shadow-blue)
+      class: blue
+      icon: anzhiyu-icon-shapes
+    - name: 设计模式
+      path: /columns/design-patterns/
+      shadow: var(--anzhiyu-shadow-green)
+      class: green
+      icon: anzhiyu-icon-lightbulb
     - name: 全部
       path: /categories/
       shadow: var(--anzhiyu-shadow-red)

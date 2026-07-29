@@ -1,0 +1,15 @@
+extends includes/layout.pug
+
+block content
+  include includes/mixins/article-sort.pug
+  - const currentCategory = site.categories.findOne({ name: page.column })
+  - const columnPosts = currentCategory ? currentCategory.posts.sort('-date') : null
+  #page.column-landing
+    h1= page.title
+    if page.description
+      p.column-description= page.description
+    if columnPosts && columnPosts.length
+      +articleSort(columnPosts, 1)
+    else
+      .column-empty
+        p 该专栏正在整理中，文章发布后会自动显示在这里。

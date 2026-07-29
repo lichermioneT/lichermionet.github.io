@@ -80,6 +80,50 @@
   border-radius: var(--lic-radius-md);
 }
 
+/* 首页专栏扩展为 6 项，避免新增入口后挤压或溢出。 */
+@media screen and (min-width: 1201px) {
+  #home_top .categoryGroup {
+    gap: 0.4rem;
+  }
+
+  #home_top .categoryGroup .categoryItem {
+    width: calc((100% - 2rem) / 6);
+    min-width: 0;
+    margin-right: 0;
+  }
+
+  #home_top .categoryButtonText {
+    padding-left: 10px;
+    font-size: 0.86rem;
+    white-space: nowrap;
+  }
+
+  #home_top a.categoryButton i {
+    right: -18px;
+    font-size: 4rem;
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+  #home_top .categoryGroup {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    grid-template-rows: repeat(2, minmax(72px, 1fr));
+    gap: 0.5rem;
+    min-width: 520px;
+    height: 340px;
+  }
+
+  #home_top .categoryGroup .categoryItem,
+  #home_top .categoryGroup .categoryItem:nth-child(3) {
+    display: block;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    margin: 0;
+  }
+}
+
 /* 标签做成柔和的胶囊按钮。 */
 .card-tag-cloud a,
 .tag-cloud-list a {

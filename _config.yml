@@ -58,9 +58,12 @@ default_category: 随笔
 category_map:
   C++: cpp
   Linux: linux
+  C 语言: c-language
   网络编程: network
   数据结构: data-structures
+  设计模式: design-patterns
   数据库: database
+  读书: reading
 tag_map:
   C++: cpp
   Linux: linux
