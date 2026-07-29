@@ -1,17 +1,19 @@
 ---
-title: Linux 基础IO
-date: 2026-07-29 20:00:00
-updated: 2026-07-29 20:00:00
-description: 基础IO
+title: Linux 基础 I/O：从文件描述符到文件系统与动静态库
+date: 2026-07-29 19:00:00
+updated: 2026-07-29 19:00:00
+description: 系统梳理 Linux 基础 I/O，涵盖文件描述符、重定向、缓冲区、文件系统以及静态库与动态库的原理和常用接口。
 categories:
   - Linux
 tags:
   - Linux
-  - 基础IO
+  - 文件 I/O
+  - 文件描述符
+  - 重定向
+  - 文件系统
+  - 动静态库
 comments: false
 ---
-
-# Linux 基础 I/O：文件描述符、重定向、缓冲区、文件系统与动静态库
 
 Linux 的 I/O 学习可以沿着一条清晰的路径展开：
 
