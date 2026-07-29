@@ -1,0 +1,485 @@
+# ============================================================
+# AnZhiYu 主题个性化配置
+# 适用：Hexo 7.x + hexo-theme-anzhiyu 1.7.0
+# 说明：本文件放到博客根目录，与 Hexo 的 _config.yml 同级。
+# ============================================================
+
+# 顶部导航：采用“分组导航”，复刻参考站点的信息层级，但内容按你的技术方向组织。
+menu:
+  专栏:
+    C++: /categories/cpp/ || anzhiyu-icon-book
+    Linux: /categories/linux/ || anzhiyu-icon-shapes
+  文章:
+    归档: /archives/ || anzhiyu-icon-box-archive
+    分类: /categories/ || anzhiyu-icon-shapes
+    标签: /tags/ || anzhiyu-icon-tags
+  关于:
+    关于本站: /about/ || anzhiyu-icon-paper-plane
+    GitHub: https://github.com/lichermioneT || anzhiyu-icon-github
+
+# 关闭另一套横向项目导航，避免和上方菜单重复。
+nav:
+  enable: false
+  travelling: false
+  clock: false
+
+# 代码块
+highlight_theme: mac light
+highlight_copy: true
+highlight_lang: true
+highlight_shrink: false
+highlight_height_limit: 420
+code_word_wrap: false
+
+copy:
+  enable: true
+  copyright:
+    enable: false
+    limit_count: 80
+
+# 社交链接
+social:
+  GitHub: https://github.com/lichermioneT || anzhiyu-icon-github
+
+# 作者状态卡片
+author_status:
+  enable: true
+  statusImg: /img/avatar.jpg
+  skills:
+    - 💻 C++ 后端学习者
+    - 🐧 Linux 实践与记录
+    - 🌐 网络编程与高并发
+    - 🧱 数据结构与算法
+    - 🗄️ MySQL / Redis
+    - 🔨 用项目检验知识
+
+# 本地搜索。需要安装 hexo-generator-searchdb。
+local_search:
+  enable: true
+  preload: false
+  CDN:
+
+# 站点图标和头像
+favicon: /favicon.ico
+avatar:
+  img: /img/avatar.jpg
+  effect: false
+
+# 顶部视觉：使用纯 CSS 渐变，不依赖外部图床。
+disable_top_img: false
+index_img: "background: linear-gradient(135deg, #081426 0%, #123f75 48%, #0e7490 100%)"
+default_top_img: "background: linear-gradient(135deg, #081426 0%, #123f75 48%, #0e7490 100%)"
+
+# 文章封面
+cover:
+  index_enable: true
+  aside_enable: true
+  archives_enable: true
+  position: both
+  default_cover:
+    - /img/default_cover.jpg
+
+error_img:
+  flink: /img/404.jpg
+  post_page: /img/404.jpg
+
+error_404:
+  enable: true
+  subtitle: 页面走丢了，试试站内搜索吧
+  background: /img/404.jpg
+
+# 文章元信息
+post_meta:
+  page:
+    date_type: created
+    date_format: simple
+    categories: true
+    tags: true
+    label: false
+  post:
+    date_type: both
+    date_format: date
+    categories: true
+    tags: true
+    label: true
+    unread: false
+
+# 字数与阅读时间。需要安装 hexo-wordcount。
+wordcount:
+  enable: true
+  post_wordcount: true
+  min2read: true
+  total_wordcount: true
+
+index_post_content:
+  method: 2
+  length: 180
+
+toc:
+  post: true
+  page: false
+  number: true
+  expand: false
+  style_simple: false
+
+post_copyright:
+  enable: true
+  decode: false
+  author_href: https://github.com/lichermioneT
+  location:
+  license: CC BY-NC-SA 4.0
+  license_url: https://creativecommons.org/licenses/by-nc-sa/4.0/
+  avatarSinks: false
+  copyright_author_img_back:
+  copyright_author_img_front:
+  copyright_author_link: /
+
+# 默认关闭打赏，避免保留主题示例二维码。
+reward:
+  enable: false
+  QR_code:
+
+# 评论系统暂不启用；后续可接入 Twikoo / Waline。
+comments:
+  use:
+  text: true
+  lazyload: false
+  count: false
+  card_post_count: false
+
+# 页脚
+footer:
+  owner:
+    enable: true
+    since: 2026
+  custom_text: 保持好奇，持续学习，认真记录。
+  runtime:
+    enable: true
+    launch_time: 07/28/2026 00:00:00
+    work_img:
+    work_description:
+    offduty_img:
+    offduty_description:
+  bdageitem:
+    enable: false
+    list: []
+  socialBar:
+    enable: true
+    centerImg:
+    left: []
+    right:
+      - title: GitHub
+        link: https://github.com/lichermioneT
+        icon: anzhiyu-icon-github
+      - title: RSS
+        link: /atom.xml
+        icon: anzhiyu-icon-rss
+  list:
+    enable: false
+  footerBar:
+    enable: true
+    authorLink: /
+    cc:
+      enable: false
+      link: /copyright/
+    linkList:
+      - link: https://hexo.io/
+        text: Hexo
+      - link: https://github.com/anzhiyu-c/hexo-theme-anzhiyu
+        text: AnZhiYu
+    subTitle:
+      enable: false
+
+# 主色与卡片布局
+theme_color:
+  enable: true
+  main: "#176B87"
+  dark_main: "#67E8F9"
+  paginator: "#176B87"
+  text_selection: "#0E7490"
+  link_color: "var(--anzhiyu-fontcolor)"
+  meta_color: "var(--anzhiyu-fontcolor)"
+  hr_color: "#176B8730"
+  code_foreground: "#F8FAFC"
+  code_background: "#0F172A"
+  toc_color: "#176B87"
+  scrollbar_color: "var(--anzhiyu-scrollbar)"
+  meta_theme_color_light: "#F5F8FC"
+  meta_theme_color_dark: "#0B1120"
+
+sidebar:
+  site_data:
+    archive: true
+    tag: true
+    category: true
+  menus_items: true
+  tags_cloud: true
+  display_mode: true
+  nav_menu_project: false
+
+h2Divider: true
+table_interlaced_discoloration: true
+article_double_row: true
+index_site_info_top:
+index_top_img_height: 380px
+category_ui: index
+tag_ui: index
+footer_bg: false
+
+# 背景动效保持克制，兼顾性能。
+canvas_ribbon:
+  enable: false
+canvas_fluttering_ribbon:
+  enable: false
+canvas_nest:
+  enable: false
+fireworks:
+  enable: false
+click_heart:
+  enable: false
+ClickShowText:
+  enable: false
+
+display_mode: light
+beautify:
+  enable: true
+  field: post
+  title-prefix-icon: '\f0c1'
+  title-prefix-icon-color: "#0E7490"
+
+font:
+  global-font-size: 16px
+  code-font-size: 0.95em
+  font-family: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif'
+  code-font-family: '"JetBrains Mono", Consolas, Menlo, monospace'
+
+blog_title_font:
+  font_link:
+  font-family: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif'
+
+subtitle:
+  enable: true
+  effect: true
+  startDelay: 300
+  typeSpeed: 90
+  backSpeed: 35
+  loop: true
+  source: false
+  sub:
+    - 记录 C++、Linux 与高并发网络编程
+    - 从原理出发，把每一个知识点讲清楚
+    - Keep coding, keep thinking.
+
+preloader:
+  enable: false
+  source: 3
+  pace_css_url:
+  avatar: /img/avatar.jpg
+
+# 右侧栏
+aside:
+  enable: true
+  hide: false
+  button: true
+  mobile: true
+  position: right
+  display:
+    archive: true
+    tag: true
+    category: true
+  card_author:
+    enable: true
+    description: <div style="line-height:1.55;text-align:left;">记录 <b>C++、Linux、网络编程、数据结构与数据库</b> 的学习过程，用项目验证理解。</div>
+    name_link: /
+  card_announcement:
+    enable: true
+    content: 欢迎来到我的技术博客，文章持续整理中。
+  card_weixin:
+    enable: false
+    face:
+    backFace:
+  card_recent_post:
+    enable: true
+    limit: 5
+    sort: date
+    sort_order:
+  card_categories:
+    enable: true
+    limit: 8
+    expand: none
+    sort_order:
+  card_tags:
+    enable: true
+    limit: 24
+    color: true
+    sort_order:
+    highlightTags:
+      - C++
+      - Linux
+      - 网络编程
+      - 数据结构
+      - MySQL
+      - Redis
+  card_archives:
+    enable: true
+    type: monthly
+    format: YYYY年MM月
+    order: -1
+    limit: 8
+    sort_order:
+  card_webinfo:
+    enable: true
+    post_count: true
+    last_push_date: true
+    sort_order:
+
+# 访客数据使用第三方不蒜子；若不需要外部统计，可将三项改为 false。
+busuanzi:
+  site_uv: true
+  site_pv: true
+  page_pv: true
+
+runtimeshow:
+  enable: true
+  publish_date: 7/28/2026 00:00:00
+
+newest_comments:
+  enable: false
+
+translate:
+  enable: false
+
+readmode: true
+centerConsole:
+  enable: false
+  card_tags:
+    enable: true
+    limit: 24
+    color: true
+    sort_order:
+    highlightTags:
+      - C++
+      - Linux
+      - 网络编程
+  card_archives:
+    enable: true
+    type: monthly
+    format: YYYY年MM月
+    order: -1
+    limit: 8
+    sort_order:
+
+darkmode:
+  enable: true
+  button: true
+  autoChangeMode: 1
+  start:
+  end:
+
+rightside_item_order:
+  enable: true
+  hide: readmode,hideAside
+  show: toc,darkmode
+
+fancybox: true
+medium_zoom: false
+
+pjax:
+  enable: true
+  exclude: []
+
+aplayerInject:
+  enable: false
+  per_page: false
+
+snackbar:
+  enable: true
+  position: top-center
+  bg_light: "#176B87"
+  bg_dark: "#164E63"
+
+instantpage: true
+pangu:
+  enable: true
+  field: post
+
+lazyload:
+  enable: true
+  field: site
+  placeholder:
+  blur: true
+  progressive: true
+
+# 首页顶部：技术专栏入口 + 重点内容横幅。
+home_top:
+  enable: true
+  timemode: date
+  title: Lichermione 的技术栈
+  subTitle: C++ 后端学习与项目实践
+  siteText: lichermionet.github.io
+  category:
+    - name: C++
+      path: /categories/cpp/
+      shadow: var(--anzhiyu-shadow-blue)
+      class: blue
+      icon: anzhiyu-icon-book
+    - name: Linux
+      path: /categories/linux/
+      shadow: var(--anzhiyu-shadow-green)
+      class: green
+      icon: anzhiyu-icon-shapes
+    - name: 全部
+      path: /categories/
+      shadow: var(--anzhiyu-shadow-red)
+      class: red
+      icon: anzhiyu-icon-box-archive
+  default_descr: 把复杂问题拆开，把基础知识练扎实。
+  swiper:
+    enable: false
+  banner:
+    tips: 持续更新
+    title: C++ 后端成长路线
+    image: /img/default_cover.jpg
+    link: /archives/
+
+# 视觉效果和附加功能
+universe:
+  enable: false
+bubble:
+  enable: false
+console:
+  enable: false
+diytitle:
+  enable: true
+  leaveTitle: 页面还在，等你回来
+  backTitle: 欢迎回来，继续学习吧
+nav_music:
+  enable: false
+visitorMail:
+  enable: false
+rightClickMenu:
+  enable: false
+peoplecanvas:
+  enable: false
+dynamicEffect:
+  postTopWave: true
+  postTopRollZoomInfo: false
+  pageCommentsRollZoom: false
+
+# 加载自定义样式
+inject:
+  head:
+    - <link rel="stylesheet" href="/css/custom.css">
+  bottom: []
+
+# 内部资源本地加载，减少对第三方 CDN 的依赖。
+CDN:
+  internal_provider: local
+  third_party_provider: cbd
+  version: true
+  custom_format:
+
+# 未配置的主题默认功能显式关闭，避免示例内容和第三方请求进入页面。
+site_verification:
+post_head_ai_description:
+  enable: false

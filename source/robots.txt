@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lichermionet.github.io/sitemap.xml
