@@ -361,6 +361,79 @@ for (auto it = first; it != last; ++it)
 3 4 6 7
 ```
 
+**用法总结**
+
+```c++
+#include <iostream>
+#include <set>
+#include <vector>
+using namespace std;
+
+int main()
+{
+// 1.构造函数
+	set<int> s1;                        // 空构造
+	set<int> s2{ 1,2,3,4,5 ,5};         // 初始化列表
+	vector<int> v{ 1,23,4,5 };
+	set<int> s3{ v.begin(), v.end() };  // 迭代器构造
+	set<int> s4(s3);                    // 拷贝构造
+
+// 2.迭代器
+	// 正向，反向，常量，普通
+	set<int>::iterator it1 = s4.begin();
+	set<int>::iterator it2 = s4.end();
+	set<int>::const_iterator it3 = s4.cbegin();
+	set<int>::const_iterator it4 = s4.cend();
+
+	set<int>::reverse_iterator it5 = s4.rbegin();
+	set<int>::reverse_iterator it6 = s4.rend();
+	set<int>::const_reverse_iterator it7 = s4.crbegin();
+	set<int>::const_reverse_iterator it8 = s4.crend();
+
+// 3.容量相关的函数
+	cout << s1.empty() << endl;  // 空的就是true
+	cout << s4.empty() << endl;  // 元素个数
+
+// 4.修改操作
+	// insert插入成功失败都会返回插入的值，需要根据pair的第二个参数进行判断的
+	pair<set<int>::iterator, bool> ret = s1.insert(88);
+	cout << "ret:" << *ret.first << endl;
+	cout << "ret:" << ret.second << endl;
+	ret = s1.insert(88);
+	cout << "ret:" << *ret.first << endl;
+	cout << "ret:" << ret.second << endl;
+
+// 删除指定值，或者迭代器的位置
+	cout << s2.erase(3) << endl;
+	s2.erase(s2.begin());
+
+	s2.clear(); // 元素清空
+
+// STL查找都要注意，迭代器和end进行判断的
+	set<int> s6{ 1,3,4,5,6,7,8,20 };
+	set<int>::iterator it9 = s6.find(3);
+	if (it9 != s6.end())
+	{
+		cout << *it9 << endl;
+	}
+
+	cout << s6.count(1) << endl;
+	cout << s6.count(3) << endl;
+
+	return 0;
+}
+```
+
+**总结：**
+
+**1.插入的时候，迭代器的类型。**
+
+**2.查找的时候，注意和end进行判断**
+
+**3.set底层是红黑树的**
+
+
+
 ## 四、map
 
 ### 4.1 map 的特点
@@ -622,6 +695,288 @@ if (it != dictionary.end())
 ```
 
 键决定红黑树中的位置，因此不能直接修改；映射值不参与排序，可以安全修改。
+
+
+
+**用法总结**
+
+```c++
+#include <iostream>
+#include <map>
+#include <string>
+#include <utility>
+
+using namespace std;
+
+void PrintMap(const map<int, string>& m)
+{
+    for (const auto& [key, value] : m)
+    {
+        cout << key << " : " << value << '\n';
+    }
+
+    cout << "--------------------\n";
+}
+
+int main()
+{
+    // =====================================================
+    // 1. 构造函数
+    // =====================================================
+
+    // 默认构造
+    map<int, string> m1;
+
+    // 初始化列表构造
+    map<int, string> m2{
+        {1, "one"},
+        {2, "two"},
+        {3, "three"}
+    };
+
+    // 拷贝构造
+    map<int, string> m3(m2);
+
+    // 范围构造
+    map<int, string> m4(m2.begin(), m2.end());
+
+    // 移动构造
+    map<int, string> m5(std::move(m4));
+
+    cout << "m2：" << '\n';
+    PrintMap(m2);
+
+    // =====================================================
+    // 2. 迭代器
+    // =====================================================
+
+    map<int, string>::iterator it1 = m3.begin();
+    map<int, string>::iterator it2 = m3.end();
+
+    map<int, string>::const_iterator it3 = m3.cbegin();
+    map<int, string>::const_iterator it4 = m3.cend();
+
+    map<int, string>::reverse_iterator it5 = m3.rbegin();
+    map<int, string>::reverse_iterator it6 = m3.rend();
+
+    map<int, string>::const_reverse_iterator it7 = m3.crbegin();
+    map<int, string>::const_reverse_iterator it8 = m3.crend();
+
+    cout << "正向遍历：" << '\n';
+    for (auto it = m3.begin(); it != m3.end(); ++it)
+    {
+        cout << it->first << " : " << it->second << '\n';
+    }
+
+    cout << "反向遍历：" << '\n';
+    for (auto it = m3.rbegin(); it != m3.rend(); ++it)
+    {
+        cout << it->first << " : " << it->second << '\n';
+    }
+
+    cout << "--------------------\n";
+
+    // =====================================================
+    // 3. 容量相关
+    // =====================================================
+
+    cout << boolalpha;
+    cout << "m3.empty() = " << m3.empty() << '\n';
+    cout << "m3.size()  = " << m3.size() << '\n';
+    cout << "m3.max_size() = " << m3.max_size() << '\n';
+
+    cout << "--------------------\n";
+
+    // =====================================================
+    // 4. 插入元素
+    // =====================================================
+
+    // 方式一：insert + make_pair
+    pair<map<int, string>::iterator, bool> ret1 =
+        m1.insert(make_pair(4, "four"));
+
+    if (ret1.second)
+    {
+        cout << "插入成功：" << ret1.first->first
+            << " : " << ret1.first->second << '\n';
+    }
+    else
+    {
+        cout << "插入失败，key 已存在：" << ret1.first->first << '\n';
+    }
+
+    // 再次插入相同 key，插入失败
+    auto ret2 = m1.insert({ 4, "FOUR" });
+
+    if (!ret2.second)
+    {
+        cout << "key = 4 已存在，原值为："
+            << ret2.first->second << '\n';
+    }
+
+    // 方式二：使用 operator[]
+    m1[1] = "one";
+    m1[2] = "two";
+
+    // 方式三：使用 emplace
+    m1.emplace(3, "three");
+
+    // 方式四：使用 insert_or_assign，C++17
+    // key 存在则修改，不存在则插入
+    m1.insert_or_assign(2, "TWO");
+
+    // 方式五：使用 try_emplace，C++17
+    // 只有 key 不存在时才构造 value
+    m1.try_emplace(5, "five");
+
+    cout << "插入元素后的 m1：" << '\n';
+    PrintMap(m1);
+
+    // =====================================================
+    // 5. 元素访问
+    // =====================================================
+
+    // operator[]
+    // key 不存在时，会自动插入一个默认值
+    cout << "m1[1] = " << m1[1] << '\n';
+
+    // at()
+    // key 不存在时抛出 out_of_range 异常
+    try
+    {
+        cout << "m1.at(2) = " << m1.at(2) << '\n';
+        cout << "m1.at(100) = " << m1.at(100) << '\n';
+    }
+    catch (const out_of_range& e)
+    {
+        cout << "访问失败：" << e.what() << '\n';
+    }
+
+    cout << "--------------------\n";
+
+    // =====================================================
+    // 6. 查找元素
+    // =====================================================
+
+    // find()
+    auto pos = m1.find(3);
+
+    if (pos != m1.end())
+    {
+        cout << "找到元素：" << pos->first
+            << " : " << pos->second << '\n';
+    }
+    else
+    {
+        cout << "没有找到 key = 3" << '\n';
+    }
+
+    // count()
+    // 对于 map，返回值只能是 0 或 1
+    cout << "key = 3 的数量：" << m1.count(3) << '\n';
+    cout << "key = 10 的数量：" << m1.count(10) << '\n';
+
+    // contains()，C++20
+    /*
+    if (m1.contains(3))
+    {
+        cout << "m1 中存在 key = 3" << '\n';
+    }
+    */
+
+    cout << "--------------------\n";
+
+    // =====================================================
+    // 7. lower_bound、upper_bound 和 equal_range
+    // =====================================================
+
+    // 第一个 key >= 3 的位置
+    auto lower = m1.lower_bound(3);
+
+    if (lower != m1.end())
+    {
+        cout << "lower_bound(3)："
+            << lower->first << " : " << lower->second << '\n';
+    }
+
+    // 第一个 key > 3 的位置
+    auto upper = m1.upper_bound(3);
+
+    if (upper != m1.end())
+    {
+        cout << "upper_bound(3)："
+            << upper->first << " : " << upper->second << '\n';
+    }
+
+    // 返回 [lower_bound, upper_bound)
+    auto range = m1.equal_range(3);
+
+    cout << "equal_range(3)：" << '\n';
+    for (auto it = range.first; it != range.second; ++it)
+    {
+        cout << it->first << " : " << it->second << '\n';
+    }
+
+    cout << "--------------------\n";
+
+    // =====================================================
+    // 8. 删除元素
+    // =====================================================
+
+    // 按 key 删除
+    // 返回实际删除的元素数量
+    size_t eraseCount = m1.erase(5);
+    cout << "删除 key = 5 的元素数量：" << eraseCount << '\n';
+
+    // 按迭代器删除
+    if (!m1.empty())
+    {
+        m1.erase(m1.begin());
+    }
+
+    // 删除一个范围
+    auto first = m1.lower_bound(3);
+    auto last = m1.end();
+    m1.erase(first, last);
+
+    cout << "删除后的 m1：" << '\n';
+    PrintMap(m1);
+
+    // =====================================================
+    // 9. swap 和 clear
+    // =====================================================
+
+    map<int, string> m6{
+        {10, "ten"},
+        {20, "twenty"}
+    };
+
+    cout << "交换前 m1：" << '\n';
+    PrintMap(m1);
+
+    cout << "交换前 m6：" << '\n';
+    PrintMap(m6);
+
+    m1.swap(m6);
+
+    cout << "交换后 m1：" << '\n';
+    PrintMap(m1);
+
+    cout << "交换后 m6：" << '\n';
+    PrintMap(m6);
+
+    m1.clear();
+
+    cout << "clear 后 m1.size() = " << m1.size() << '\n';
+    cout << "clear 后 m1.empty() = " << m1.empty() << '\n';
+
+    return 0;
+}
+```
+
+
+
+
 
 ## 五、multiset 与 multimap
 
