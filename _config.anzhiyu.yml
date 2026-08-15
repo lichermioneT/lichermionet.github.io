@@ -226,7 +226,7 @@ table_interlaced_discoloration: true
 article_double_row: true
 index_site_info_top:
 index_top_img_height: 380px
-category_ui: index
+category_ui: default
 tag_ui: index
 footer_bg: false
 
