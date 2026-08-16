@@ -1,0 +1,1728 @@
+---
+title: C++类与对象（下篇）：初始化列表、static成员、友元与内部类
+date: 2026-08-15 20:00:00
+categories:
+  - C++
+tags:
+  - C++
+  - 类与对象
+  - 初始化列表
+  - explicit
+  - static成员
+  - 友元
+  - 内部类
+  - 封装
+---
+
+类与对象的基础语法并不复杂，真正影响代码质量的是对象如何初始化、共享状态如何组织、类之间如何协作，以及哪些实现细节应该隐藏。
+
+本文继续深入C++类与对象，重点讲解构造函数体赋值与初始化列表的区别、成员初始化顺序、`explicit`、静态数据成员和静态成员函数、C++11默认成员初始化器、友元函数、友元类、嵌套类及封装设计。
+
+<!-- more -->
+
+## 一、再次理解对象初始化
+
+### 1.1 构造函数体中的代码什么时候执行
+
+```cpp
+class Date
+{
+public:
+    Date(int year, int month, int day)
+    {
+        _year = year;
+        _month = month;
+        _day = day;
+    }
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+这段代码最终能为三个成员设置值，但进入构造函数体之前，成员的初始化阶段已经发生。
+
+函数体中的三条语句属于赋值：
+
+```cpp
+_year = year;
+_month = month;
+_day = day;
+```
+
+初始化与赋值不是同一个过程：
+
+- 初始化让对象或子对象第一次获得状态；
+- 赋值修改一个已经完成初始化的对象；
+- 每个子对象只初始化一次；
+- 一个已经存在的对象可以被赋值多次。
+
+### 1.2 对内置类型为什么不容易看出区别
+
+对于`int`等简单类型，先默认初始化再赋值与直接初始化在结果上经常相似：
+
+```cpp
+int value;
+value = 10;
+```
+
+但是，对于类类型成员，差异可能意味着一次额外的默认构造和一次赋值。
+
+```cpp
+class Name
+{
+public:
+    Name();
+    explicit Name(const char* text);
+    Name& operator=(const char* text);
+};
+
+class Person
+{
+public:
+    explicit Person(const char* name)
+    {
+        _name = name;
+    }
+
+private:
+    Name _name;
+};
+```
+
+`_name`可能先调用`Name()`，之后才调用赋值运算符。
+
+直接初始化更准确：
+
+```cpp
+explicit Person(const char* name)
+    : _name(name)
+{}
+```
+
+## 二、成员初始化列表
+
+### 2.1 基本语法
+
+成员初始化列表位于构造函数参数列表与函数体之间，以冒号开始，不同初始化项用逗号分隔：
+
+```cpp
+class Date
+{
+public:
+    Date(int year, int month, int day)
+        : _year(year),
+          _month(month),
+          _day(day)
+    {}
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+也可以使用花括号：
+
+```cpp
+Date(int year, int month, int day)
+    : _year{year}, _month{month}, _day{day}
+{}
+```
+
+花括号初始化能阻止部分窄化转换，是现代C++常用形式。
+
+### 2.2 一个成员只能在列表中出现一次
+
+```text
+Date(int year)
+    : _year(year), _year(1970)
+{}
+```
+
+同一个成员不能被初始化两次，因此上面的代码不合法。
+
+### 2.3 每个成员都会被初始化
+
+即使没有把某个成员写进初始化列表，它仍然会根据语言规则完成初始化：
+
+- 有默认成员初始化器时，使用该初始化器；
+- 类类型成员尝试调用默认构造函数；
+- 某些默认初始化场景下，内置类型可能保留不确定值；
+- 数组成员逐元素初始化；
+- 基类子对象按相应构造规则初始化。
+
+没有写出来不等于成员“跳过了初始化阶段”。
+
+### 2.4 必须使用初始化列表的场景
+
+#### 引用成员
+
+```cpp
+class ReferenceHolder
+{
+public:
+    explicit ReferenceHolder(int& value)
+        : _reference(value)
+    {}
+
+private:
+    int& _reference;
+};
+```
+
+引用必须在初始化时绑定对象，不能先空着再赋值。
+
+#### `const`成员
+
+```cpp
+class Record
+{
+public:
+    explicit Record(int id)
+        : _id(id)
+    {}
+
+private:
+    const int _id;
+};
+```
+
+`const`成员初始化后不能再通过普通赋值修改。
+
+#### 没有默认构造函数的类类型成员
+
+```cpp
+class Engine
+{
+public:
+    explicit Engine(int power)
+        : _power(power)
+    {}
+
+private:
+    int _power;
+};
+
+class Car
+{
+public:
+    explicit Car(int power)
+        : _engine(power)
+    {}
+
+private:
+    Engine _engine;
+};
+```
+
+`Engine`不能无参构造，所以`Car`必须明确告诉编译器如何构造`_engine`。
+
+#### 需要调用特定基类构造函数
+
+```cpp
+class Base
+{
+public:
+    explicit Base(int value);
+};
+
+class Derived : public Base
+{
+public:
+    explicit Derived(int value)
+        : Base(value)
+    {}
+};
+```
+
+### 2.5 引用成员的生命周期陷阱
+
+下面的代码看似使用了初始化列表，但仍然有错误：
+
+```text
+class Holder
+{
+public:
+    explicit Holder(int value)
+        : _reference(value)
+    {}
+
+private:
+    int& _reference;
+};
+```
+
+`value`是按值传入的局部形参。构造函数结束后它被销毁，`_reference`随即悬空。
+
+应该接收一个生命周期足够长的左值引用：
+
+```cpp
+class Holder
+{
+public:
+    explicit Holder(int& value)
+        : _reference(value)
+    {}
+
+private:
+    int& _reference;
+};
+```
+
+即使语法允许保存引用成员，也必须由调用者和类共同保证被引用对象活得足够久。
+
+### 2.6 成员的真实初始化顺序
+
+初始化顺序由类中声明顺序决定，而不是由初始化列表的书写顺序决定。
+
+```cpp
+class Example
+{
+public:
+    explicit Example(int value)
+        : _second(value), _first(_second)
+    {}
+
+private:
+    int _first;
+    int _second;
+};
+```
+
+实际先初始化`_first`，但此时`_second`还没有初始化，读取它会产生问题。
+
+正确写法：
+
+```cpp
+class Example
+{
+public:
+    explicit Example(int value)
+        : _first(value), _second(_first)
+    {}
+
+private:
+    int _first;
+    int _second;
+};
+```
+
+建议初始化列表的顺序与声明顺序完全一致，避免阅读误导和编译器警告。
+
+### 2.7 完整构造顺序
+
+一个派生类对象的主要构造顺序是：
+
+1. 虚基类子对象；
+2. 直接基类子对象；
+3. 非静态数据成员，按声明顺序；
+4. 构造函数体。
+
+析构时大体按相反顺序进行。
+
+### 2.8 委托构造函数
+
+C++11允许一个构造函数调用同类的另一个构造函数完成主要初始化：
+
+```cpp
+class Date
+{
+public:
+    Date()
+        : Date(1970, 1, 1)
+    {}
+
+    explicit Date(int year)
+        : Date(year, 1, 1)
+    {}
+
+    Date(int year, int month, int day)
+        : _year(year), _month(month), _day(day)
+    {}
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+这样可以避免多个构造函数复制相同初始化代码。
+
+## 三、`explicit`关键字
+
+### 3.1 转换构造函数
+
+能够以一个实参调用的非`explicit`构造函数，可能被编译器用于隐式类型转换：
+
+```cpp
+class Date
+{
+public:
+    Date(int year)
+        : _year(year), _month(1), _day(1)
+    {}
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+```cpp
+Date date = 2026;
+```
+
+编译器可以使用`2026`构造一个`Date`对象。
+
+### 3.2 赋值中的隐式临时对象
+
+```cpp
+Date date(2025);
+date = 2026;
+```
+
+如果构造函数允许隐式转换，编译器可以先由`2026`构造临时`Date`，再调用拷贝或移动赋值把结果交给`date`。
+
+语法虽然简短，但`整数 -> 日期`是否合理取决于接口语义。
+
+### 3.3 使用`explicit`阻止隐式转换
+
+```cpp
+class Date
+{
+public:
+    explicit Date(int year)
+        : _year(year), _month(1), _day(1)
+    {}
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+下面的复制初始化不再允许：
+
+```text
+Date date = 2026;
+```
+
+但显式构造仍然可以：
+
+```cpp
+Date first(2026);
+Date second{2026};
+Date third = Date(2026);
+```
+
+### 3.4 不只是“单参数构造函数”
+
+更准确地说，`explicit`用于构造函数和转换函数，控制它们能否参与隐式转换。
+
+一个构造函数即使形式上有多个参数，只要除一个参数外其余参数都有默认值，也可能成为能够以单个实参调用的转换构造函数：
+
+```cpp
+class Date
+{
+public:
+    explicit Date(int year, int month = 1, int day = 1);
+};
+```
+
+因此，不应只通过“参数列表里是不是只有一个参数”机械判断。
+
+### 3.5 什么时候应该使用`explicit`
+
+通常建议：单实参可调用的构造函数默认加`explicit`，除非隐式转换非常自然且不会造成歧义。
+
+适合隐式转换的例子可能包括某些数值包装类型；不适合的例子包括：
+
+- 文件句柄到文件对象；
+- 整数到日期；
+- 指针到所有权对象；
+- 容量到容器对象。
+
+### 3.6 `explicit`不会禁止所有初始化
+
+它主要限制复制初始化和某些隐式转换场景，不会阻止直接初始化：
+
+```cpp
+explicit Date(int year);
+
+Date a(2026); // 可以
+Date b{2026}; // 可以
+```
+
+## 四、C++11默认成员初始化器
+
+### 4.1 基本语法
+
+C++11允许直接在非静态数据成员声明处提供默认成员初始化器：
+
+```cpp
+class Date
+{
+private:
+    int _year = 1970;
+    int _month = 1;
+    int _day = 1;
+};
+```
+
+这并不是普通赋值语句，而是成员初始化规则的一部分。
+
+### 4.2 与构造函数初始化列表的优先关系
+
+```cpp
+class Date
+{
+public:
+    Date() = default;
+
+    explicit Date(int year)
+        : _year(year)
+    {}
+
+private:
+    int _year = 1970;
+    int _month = 1;
+    int _day = 1;
+};
+```
+
+- `Date{}`使用三个默认成员初始化器；
+- `Date{2026}`的`_year`由初始化列表指定；
+- `_month`和`_day`继续使用声明处默认值。
+
+构造函数初始化列表中的显式初始化会覆盖该成员的默认成员初始化器，不会先执行两次初始化。
+
+### 4.3 类类型成员也可以使用
+
+```cpp
+class Time
+{
+public:
+    explicit Time(int hour = 0)
+        : _hour(hour)
+    {}
+
+private:
+    int _hour;
+};
+
+class Event
+{
+private:
+    Time _start{9};
+};
+```
+
+### 4.4 不要在成员初始化器中裸管理资源
+
+```text
+int* _data = static_cast<int*>(std::malloc(100 * sizeof(int)));
+```
+
+如果类没有正确析构、复制和移动语义，就会造成泄漏或重复释放。
+
+现代C++应优先使用：
+
+```cpp
+std::vector<int> _data;
+std::unique_ptr<int[]> _buffer;
+```
+
+让资源交给RAII类型管理。
+
+### 4.5 静态成员不使用这种语法管理每个对象状态
+
+静态数据成员属于类而不是每个对象。C++11中常见定义方式仍然是类内声明、类外定义：
+
+```cpp
+class Counter
+{
+private:
+    static int _count;
+};
+
+int Counter::_count = 0;
+```
+
+C++17引入`inline static`变量后，许多静态成员可以直接在类内定义：
+
+```cpp
+// C++17
+inline static int _count = 0;
+```
+
+但该写法不能用于只启用C++11的项目。
+
+## 五、静态数据成员
+
+### 5.1 基本概念
+
+使用`static`声明的数据成员由整个类共享，不属于某一个具体对象。
+
+```cpp
+class Account
+{
+public:
+    static int count();
+
+private:
+    static int _count;
+    int _id;
+};
+```
+
+如果创建三个`Account`对象：
+
+```text
+对象1：自己的_id ┐
+对象2：自己的_id ├──共享同一个Account::_count
+对象3：自己的_id ┘
+```
+
+### 5.2 C++11中的定义方式
+
+类内通常只是声明：
+
+```cpp
+class Account
+{
+private:
+    static int _count;
+};
+```
+
+在某一个源文件的命名空间作用域中提供定义：
+
+```cpp
+int Account::_count = 0;
+```
+
+定义时不再写`static`。
+
+如果把定义放在普通头文件中并被多个翻译单元包含，可能违反单一定义规则。C++11项目通常把定义放入一个`.cpp`文件。
+
+### 5.3 静态成员不计入每个对象大小
+
+```cpp
+class Example
+{
+private:
+    static int _shared;
+    int _value;
+};
+```
+
+`_shared`拥有独立存储，不作为每个`Example`对象的一部分，因此其本体通常不计入`sizeof(Example)`。
+
+### 5.4 访问方式
+
+推荐通过类名访问：
+
+```cpp
+Account::count();
+```
+
+语言也允许通过对象表达式访问可见的静态成员：
+
+```cpp
+Account account;
+account.count();
+```
+
+但前一种写法更清晰地表达“该操作不依赖具体对象”。
+
+### 5.5 静态成员也受访问控制
+
+静态成员仍然可以是`public`、`protected`或`private`。
+
+```cpp
+class Account
+{
+public:
+    static int count()
+    {
+        return _count;
+    }
+
+private:
+    static int _count;
+};
+```
+
+外部不能因为成员是静态的就绕过`private`。
+
+### 5.6 统计存活对象数量
+
+```cpp
+class Object
+{
+public:
+    Object()
+    {
+        ++_liveCount;
+    }
+
+    Object(const Object&)
+    {
+        ++_liveCount;
+    }
+
+    Object(Object&&) noexcept
+    {
+        ++_liveCount;
+    }
+
+    ~Object()
+    {
+        --_liveCount;
+    }
+
+    static int liveCount()
+    {
+        return _liveCount;
+    }
+
+private:
+    static int _liveCount;
+};
+
+int Object::_liveCount = 0;
+```
+
+如果统计的是当前存活对象，就应在所有创建新对象的构造路径中增加，在析构时减少。
+
+### 5.7 “创建过多少对象”与“当前有多少对象”不同
+
+- 累计创建数量：构造时增加，析构时不减少；
+- 当前存活数量：构造时增加，析构时减少；
+- 拷贝构造和移动构造都会创建新对象；
+- 赋值不会创建新对象，不应增加对象数量。
+
+接口命名应明确，例如`totalConstructed()`与`liveCount()`。
+
+### 5.8 多线程下的计数
+
+普通静态`int`被多个线程并发修改会产生数据竞争。
+
+可以使用C++11原子类型：
+
+```cpp
+#include <atomic>
+
+static std::atomic<int> _liveCount;
+```
+
+静态成员共享并不自动意味着线程安全。
+
+## 六、静态成员函数
+
+### 6.1 静态成员函数没有`this`
+
+```cpp
+class Math
+{
+public:
+    static int add(int left, int right)
+    {
+        return left + right;
+    }
+};
+```
+
+调用不依赖对象：
+
+```cpp
+int result = Math::add(1, 2);
+```
+
+没有当前对象，因此静态成员函数中没有`this`。
+
+### 6.2 不能直接访问非静态成员
+
+```text
+class Example
+{
+public:
+    static void function()
+    {
+        _value = 10; // 错误：不知道是哪一个对象的_value
+    }
+
+private:
+    int _value;
+};
+```
+
+### 6.3 有对象时仍可操作非静态成员
+
+“静态成员函数不能调用任何非静态成员函数”过于绝对。它不能在没有对象的情况下直接调用，但可以显式接收对象：
+
+```cpp
+class Example
+{
+public:
+    void reset()
+    {
+        _value = 0;
+    }
+
+    static void resetObject(Example& object)
+    {
+        object.reset();
+    }
+
+private:
+    int _value = 0;
+};
+```
+
+限制的本质是没有隐式当前对象，而不是语法上永远不能出现非静态成员调用。
+
+### 6.4 非静态成员函数可以调用静态成员
+
+```cpp
+class Object
+{
+public:
+    void printCount() const
+    {
+        std::cout << liveCount() << '\n';
+    }
+
+    static int liveCount();
+};
+```
+
+静态操作不需要对象，因此普通成员函数可以直接调用。
+
+### 6.5 静态成员函数不能使用成员函数尾部`const`
+
+```text
+static int count() const; // 错误
+```
+
+尾部`const`修饰的是隐式当前对象，而静态成员函数没有`this`。
+
+## 七、友元
+
+### 7.1 为什么会有友元
+
+封装希望隐藏内部状态，但某些与类高度相关的非成员函数需要高效、自然地访问私有实现。
+
+典型例子是流运算符：
+
+```cpp
+std::cout << date;
+std::cin >> date;
+```
+
+左操作数分别是`std::ostream`和`std::istream`，因此不能把正确方向的运算符实现成`Date`成员函数。
+
+友元允许指定函数或类访问当前类的非公有成员。
+
+### 7.2 友元不是访问限定符
+
+```cpp
+class Date
+{
+    friend std::ostream& operator<<(std::ostream&, const Date&);
+
+public:
+    Date();
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+友元声明放在`public`、`protected`或`private`区域，对其友元权限没有区别。
+
+### 7.3 友元函数不是成员函数
+
+友元函数：
+
+- 定义在类外或作为类内友元定义；
+- 没有该类的隐式`this`；
+- 使用普通函数调用规则；
+- 可以访问被授权类的私有和保护成员；
+- 可以同时成为多个类的友元。
+
+“友元函数不能用`const`修饰”需要准确理解：非成员函数本来就不能使用成员函数尾部的`const`限定，但它完全可以接收`const Date&`参数，也可以是`constexpr`或`noexcept`函数。
+
+### 7.4 输出运算符
+
+```cpp
+#include <ostream>
+
+class Date
+{
+    friend std::ostream& operator<<(std::ostream& output,
+                                    const Date& date);
+
+private:
+    int _year = 1970;
+    int _month = 1;
+    int _day = 1;
+};
+
+std::ostream& operator<<(std::ostream& output, const Date& date)
+{
+    output << date._year << '-'
+           << date._month << '-'
+           << date._day;
+    return output;
+}
+```
+
+返回`std::ostream&`是为了支持连续输出：
+
+```cpp
+std::cout << date << '\n';
+```
+
+### 7.5 输入运算符
+
+```cpp
+#include <istream>
+
+class Date
+{
+    friend std::istream& operator>>(std::istream& input, Date& date);
+};
+```
+
+右操作数不能是`const Date&`，因为输入操作需要修改对象。
+
+工程代码还应验证输入，最好先读取到临时变量，全部合法后再修改目标对象，避免只更新一半状态。
+
+### 7.6 友元关系是单向的
+
+如果`Date`是`Time`的友元：
+
+```cpp
+class Time
+{
+    friend class Date;
+};
+```
+
+`Date`可以访问`Time`的非公有成员，但`Time`不会自动获得访问`Date`私有成员的权限。
+
+### 7.7 友元关系不传递
+
+```text
+B是A的友元
+C是B的友元
+```
+
+不能推出`C`是`A`的友元。
+
+### 7.8 友元关系不会自动继承
+
+一个类的友元不会自动成为其派生类的友元；友元类的派生类也不会自动继承友元权限。
+
+友元授权是显式、精确的关系。
+
+### 7.9 友元类
+
+```cpp
+class Date;
+
+class Time
+{
+    friend class Date;
+
+public:
+    Time(int hour, int minute, int second)
+        : _hour(hour), _minute(minute), _second(second)
+    {}
+
+private:
+    int _hour;
+    int _minute;
+    int _second;
+};
+
+class Date
+{
+public:
+    void resetTime()
+    {
+        _time._hour = 0;
+        _time._minute = 0;
+        _time._second = 0;
+    }
+
+private:
+    Time _time{0, 0, 0};
+};
+```
+
+`Date`的所有成员函数都获得访问`Time`非公有成员的权限。
+
+### 7.10 友元会破坏封装吗
+
+友元会扩大访问边界并增加耦合，因此应谨慎使用，但它不是绝对错误。
+
+适合使用友元的场景：
+
+- 对称的二元运算符；
+- 流输入输出；
+- 与类型实现紧密配合的构造器或工厂；
+- 需要高效访问内部表示的协作类型；
+- 测试工具在经过权衡后访问内部状态。
+
+不适合的场景：只是为了省去几个公开接口，或者让大量无关模块任意读取私有成员。
+
+### 7.11 优先考虑最小授权
+
+如果只有一个函数需要权限，就把该函数设为友元；不必把整个类设为友元。
+
+如果通过稳定的公开只读接口就能实现非成员操作，通常不必使用友元。
+
+## 八、嵌套类
+
+### 8.1 基本定义
+
+在一个类作用域中定义的类称为嵌套类，也常被称为内部类：
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+    public:
+        void function();
+    };
+};
+```
+
+类外使用名称：
+
+```cpp
+Outer::Inner object;
+```
+
+### 8.2 嵌套类是独立类型
+
+嵌套类定义在外部类作用域中，但每个`Outer`对象内部不会自动包含一个`Inner`对象。
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+        int _value;
+    };
+
+private:
+    int _number;
+};
+```
+
+仅仅定义`Inner`不会把`_value`加入每个`Outer`对象，因此通常不会改变`sizeof(Outer)`。
+
+如果显式声明一个嵌套类对象成员，才会占用空间：
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+        int _value;
+    };
+
+private:
+    Inner _inner;
+};
+```
+
+### 8.3 嵌套类没有外部对象的隐式`this`
+
+Java非静态内部类与C++嵌套类的模型不同。C++嵌套类对象不会自动携带某个外部类对象引用。
+
+要访问某个外部对象的非静态成员，需要显式获得该对象：
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+    public:
+        int read(const Outer& outer) const
+        {
+            return outer._value;
+        }
+    };
+
+private:
+    int _value = 42;
+};
+```
+
+### 8.4 嵌套类的访问权限
+
+嵌套类的成员能够按照语言规则访问外部类的私有成员，但访问非静态成员仍需要具体外部对象。
+
+课件中常把它类比成“嵌套类天然是外部类的友元”。更准确地说，这是嵌套成员类型本身的访问规则，不需要编写`friend class Inner;`。
+
+### 8.5 外部类不能自动访问嵌套类的私有成员
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+    private:
+        int _secret = 0;
+    };
+
+    void function(Inner& inner)
+    {
+        // inner._secret = 1; // 没有自动权限
+    }
+};
+```
+
+嵌套关系不会让外部类自动成为嵌套类的友元。若确有需要，`Inner`可以显式声明：
+
+```cpp
+friend class Outer;
+```
+
+### 8.6 直接访问外部类静态成员
+
+```cpp
+class Outer
+{
+public:
+    class Inner
+    {
+    public:
+        int sharedValue() const
+        {
+            return _shared;
+        }
+    };
+
+private:
+    static int _shared;
+};
+
+int Outer::_shared = 10;
+```
+
+静态成员不依赖具体外部对象，因此嵌套类可直接引用。
+
+### 8.7 嵌套类本身也受访问限定符控制
+
+```cpp
+class Parser
+{
+private:
+    class Token
+    {
+    };
+};
+```
+
+`Token`是`Parser`的私有嵌套类型，外部普通代码不能直接声明`Parser::Token`。
+
+这常用于隐藏实现辅助类型。
+
+### 8.8 常见使用场景
+
+- 容器的迭代器类型；
+- 构建器`Builder`；
+- 解析器内部Token；
+- 私有实现辅助类型；
+- 与外部类型强绑定的策略或状态类型。
+
+如果两个类型需要独立复用，放在同一命名空间通常比嵌套更合适。
+
+## 九、临时对象与匿名对象
+
+### 9.1 显式临时对象
+
+```cpp
+Date(2026, 8, 15);
+```
+
+该表达式创建一个临时对象。它通常在完整表达式结束时销毁。
+
+如果不使用该对象，单独创建临时对象往往没有意义；但临时对象可以作为函数参数、运算结果或返回值参与表达式。
+
+### 9.2 隐式转换产生的临时对象
+
+当构造函数不是`explicit`时：
+
+```cpp
+void printDate(const Date& date);
+printDate(2026);
+```
+
+编译器可能由`2026`创建临时`Date`，并让`const Date&`绑定它。
+
+使用`explicit`后，需要写明转换：
+
+```cpp
+printDate(Date(2026));
+```
+
+### 9.3 临时对象的生命周期
+
+临时对象通常在完整表达式结束时销毁，但绑定到某些引用时生命周期可能按标准规则延长。
+
+不要保存指向即将销毁临时对象内部数据的裸指针或引用。
+
+### 9.4 编译器优化
+
+编译器可能通过返回值优化、拷贝消除和移动语义减少临时对象成本。
+
+不能只根据构造与析构日志数量判断源代码抽象语义。C++11允许若干拷贝消除，C++17又保证了更多场景。
+
+## 十、再次理解封装
+
+### 10.1 封装不仅是`private`
+
+封装包含三个层次：
+
+1. 把相关数据和行为组织在一起；
+2. 隐藏容易变化的实现细节；
+3. 公开稳定且难以误用的接口。
+
+```cpp
+class TrainTicket
+{
+public:
+    bool reserveSeat(int seatNumber);
+    bool cancel();
+    bool isValid() const;
+
+private:
+    int _seatNumber = 0;
+    bool _reserved = false;
+};
+```
+
+调用者只需理解订票接口，不需要知道座位锁定、支付和回滚如何实现。
+
+### 10.2 封装用于维护不变量
+
+```cpp
+class Percentage
+{
+public:
+    explicit Percentage(double value)
+        : _value(value)
+    {
+        if (value < 0.0 || value > 100.0)
+        {
+            throw std::out_of_range("percentage out of range");
+        }
+    }
+
+    double value() const
+    {
+        return _value;
+    }
+
+private:
+    double _value;
+};
+```
+
+一个成功构造的`Percentage`对象始终处于合法范围，这就是对象不变量。
+
+### 10.3 暴露字段会固化内部表示
+
+如果调用者直接依赖公开字段：
+
+```cpp
+ticket.seatNumber = 10;
+```
+
+未来想把座位改为车厢号加座位号，就会影响所有调用者。
+
+如果通过行为接口访问，类可以在不改变外部协议的情况下调整内部结构。
+
+### 10.4 友元与封装的平衡
+
+友元不是把类完全公开，而是向指定函数或指定类授予权限。合理的友元仍然比把所有成员改为`public`更可控。
+
+设计时应问：
+
+- 是否真的需要访问私有表示；
+- 能否通过公开接口完成；
+- 能否只授权一个函数；
+- 友元会不会形成循环依赖；
+- 内部表示改变时需要同步修改多少代码。
+
+### 10.5 面向对象不等于映射现实名词
+
+把现实世界名词全部变成类，并不自动得到好设计。面向对象更重要的是：
+
+- 明确职责边界；
+- 管理状态变化；
+- 维护不变量；
+- 降低耦合；
+- 让对象通过稳定协议协作。
+
+## 十一、综合示例：日期类
+
+下面的示例综合使用初始化列表、默认成员初始化器、`explicit`、静态成员、嵌套验证器和友元流运算符。
+
+```cpp
+#include <atomic>
+#include <iomanip>
+#include <iostream>
+#include <istream>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+
+class Date
+{
+    friend std::ostream& operator<<(std::ostream& output,
+                                    const Date& date);
+    friend std::istream& operator>>(std::istream& input,
+                                    Date& date);
+
+public:
+    Date()
+        : Date(1970, 1, 1)
+    {}
+
+    explicit Date(int year)
+        : Date(year, 1, 1)
+    {}
+
+    Date(int year, int month, int day)
+        : _year(year), _month(month), _day(day)
+    {
+        if (!Validator::isValid(year, month, day))
+        {
+            throw std::invalid_argument("invalid date");
+        }
+
+        ++_liveCount;
+    }
+
+    Date(const Date& other)
+        : _year(other._year),
+          _month(other._month),
+          _day(other._day)
+    {
+        ++_liveCount;
+    }
+
+    Date(Date&& other) noexcept
+        : _year(other._year),
+          _month(other._month),
+          _day(other._day)
+    {
+        ++_liveCount;
+    }
+
+    Date& operator=(const Date&) = default;
+    Date& operator=(Date&&) = default;
+
+    ~Date()
+    {
+        --_liveCount;
+    }
+
+    static int liveCount()
+    {
+        return _liveCount.load();
+    }
+
+private:
+    class Validator
+    {
+    public:
+        static bool isValid(int year, int month, int day)
+        {
+            if (year < 1 || month < 1 || month > 12)
+            {
+                return false;
+            }
+
+            return day >= 1 && day <= daysInMonth(year, month);
+        }
+
+    private:
+        static bool isLeapYear(int year)
+        {
+            return year % 400 == 0 ||
+                   (year % 4 == 0 && year % 100 != 0);
+        }
+
+        static int daysInMonth(int year, int month)
+        {
+            static const int days[] = {
+                0, 31, 28, 31, 30, 31, 30,
+                31, 31, 30, 31, 30, 31
+            };
+
+            if (month == 2 && isLeapYear(year))
+            {
+                return 29;
+            }
+
+            return days[month];
+        }
+    };
+
+private:
+    int _year = 1970;
+    int _month = 1;
+    int _day = 1;
+
+    static std::atomic<int> _liveCount;
+};
+
+std::atomic<int> Date::_liveCount(0);
+
+std::ostream& operator<<(std::ostream& output, const Date& date)
+{
+    const char oldFill = output.fill('0');
+
+    output << std::setw(4) << date._year << '-'
+           << std::setw(2) << date._month << '-'
+           << std::setw(2) << date._day;
+
+    output.fill(oldFill);
+    return output;
+}
+
+std::istream& operator>>(std::istream& input, Date& date)
+{
+    int year = 0;
+    int month = 0;
+    int day = 0;
+
+    if (!(input >> year >> month >> day))
+    {
+        return input;
+    }
+
+    if (!Date::Validator::isValid(year, month, day))
+    {
+        input.setstate(std::ios::failbit);
+        return input;
+    }
+
+    date._year = year;
+    date._month = month;
+    date._day = day;
+
+    return input;
+}
+
+int main()
+{
+    std::cout << "initial live: " << Date::liveCount() << '\n';
+
+    {
+        Date epoch;
+        Date yearOnly(2026);
+        Date leapDay(2000, 2, 29);
+        Date copy(leapDay);
+
+        std::cout << epoch << '\n';
+        std::cout << yearOnly << '\n';
+        std::cout << leapDay << '\n';
+        std::cout << copy << '\n';
+        std::cout << "live in scope: " << Date::liveCount() << '\n';
+
+        std::istringstream input("2024 2 29");
+        input >> epoch;
+        std::cout << "parsed: " << epoch << '\n';
+    }
+
+    std::cout << "final live: " << Date::liveCount() << '\n';
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+initial live: 0
+1970-01-01
+2026-01-01
+2000-02-29
+2000-02-29
+live in scope: 4
+parsed: 2024-02-29
+final live: 0
+```
+
+### 11.1 初始化列表与委托构造
+
+无参构造和单年构造都委托给完整构造函数，所有日期合法性检查只保留一份。
+
+### 11.2 `explicit`
+
+`Date(int)`被声明为`explicit`，避免整数被意外隐式转换为日期。
+
+### 11.3 静态对象计数
+
+`_liveCount`属于类，所有对象共享。每次真正创建对象时增加，析构时减少，赋值不改变数量。
+
+示例使用`std::atomic<int>`，避免多个线程同时更新计数时发生普通数据竞争。
+
+### 11.4 嵌套验证器
+
+`Validator`是私有嵌套类，用于隐藏日期验证细节。它不会作为成员对象加入每个`Date`对象。
+
+### 11.5 友元输出
+
+`operator<<`访问私有年月日，并恢复输出流原来的填充字符，避免把格式状态意外泄漏给后续输出。
+
+### 11.6 友元输入与事务式更新
+
+`operator>>`先读取到局部变量，验证全部成功后才修改`date`。非法日期会设置输入流失败状态，原对象保持不变。
+
+## 十二、常见错误与误区
+
+### 12.1 把构造函数体赋值称为成员初始化
+
+问题：进入函数体前成员已经完成初始化。
+
+修正：优先使用初始化列表直接建立成员状态。
+
+### 12.2 初始化列表顺序与声明顺序不一致
+
+问题：真正顺序由声明决定，可能读取尚未初始化的成员。
+
+修正：保持两处顺序一致并开启编译器警告。
+
+### 12.3 引用成员绑定按值形参
+
+问题：形参在构造结束后销毁，引用成员悬空。
+
+修正：接收生命周期足够长的引用，并在类型设计中明确生命周期关系。
+
+### 12.4 认为默认成员初始化器是构造后的赋值
+
+问题：它属于成员初始化规则，不是对象构造完成后的普通赋值语句。
+
+### 12.5 认为`explicit`只适用于形式上单参数的构造函数
+
+问题：多参数构造函数在其余参数有默认值时也可能以一个实参调用。
+
+修正：根据是否允许隐式转换决定是否使用`explicit`。
+
+### 12.6 忘记在源文件中定义静态数据成员
+
+问题：C++11中，类内声明的普通静态数据成员在被使用时通常还需要一个类外定义，否则可能出现链接错误。
+
+### 12.7 把静态成员定义写进普通头文件
+
+问题：多个翻译单元包含后可能形成重复定义。
+
+修正：C++11把定义放在一个`.cpp`中；C++17可按规则使用`inline static`。
+
+### 12.8 认为静态成员函数绝对不能调用非静态函数
+
+问题：它只是没有隐式当前对象。
+
+修正：如果显式获得对象，可以通过该对象调用非静态成员函数。
+
+### 12.9 统计对象时忘记拷贝和移动构造
+
+问题：拷贝构造和移动构造都会创建新对象，若不计数会导致结果错误。
+
+### 12.10 多线程直接修改普通静态计数器
+
+问题：并发读写产生数据竞争。
+
+修正：使用互斥锁、原子类型或其他同步策略。
+
+### 12.11 把友元函数当成成员函数
+
+问题：友元函数没有当前类的隐式`this`，调用方式和参数数量仍按普通函数处理。
+
+### 12.12 认为友元关系双向或可传递
+
+问题：友元只对显式授权方向有效，也不会沿类关系自动传播。
+
+### 12.13 把大量无关类设为友元
+
+问题：访问边界膨胀，内部表示变化会影响更多模块。
+
+修正：坚持最小权限原则，能授权一个函数就不要授权整个类。
+
+### 12.14 认为嵌套类对象自动携带外部对象
+
+问题：C++嵌套类没有外部类对象的隐式引用。
+
+修正：访问非静态外部成员时显式传入外部对象。
+
+### 12.15 认为定义嵌套类会增大外部对象
+
+问题：类型定义本身不是对象成员。
+
+修正：只有显式声明嵌套类类型的数据成员，才会参与外部对象布局。
+
+## 十三、面试常见问题
+
+### 13.1 初始化和赋值有什么区别
+
+初始化在对象或子对象生命周期开始时建立状态，只发生一次；赋值修改已经初始化的对象，可以发生多次。
+
+### 13.2 为什么推荐成员初始化列表
+
+它直接初始化成员，避免类类型成员先默认构造再赋值，也是初始化引用、`const`成员、无默认构造函数成员和基类子对象的必要方式。
+
+### 13.3 成员初始化顺序由什么决定
+
+由成员在类定义中的声明顺序决定，与初始化列表书写顺序无关。基类子对象会在数据成员之前构造。
+
+### 13.4 什么是默认成员初始化器
+
+C++11允许在非静态数据成员声明处提供默认初始化表达式。当构造函数没有在初始化列表中指定该成员时，使用该默认值。
+
+### 13.5 `explicit`解决什么问题
+
+它阻止构造函数或转换函数被用于不希望发生的隐式转换，使调用者必须明确表达类型转换意图。
+
+### 13.6 静态数据成员属于对象吗
+
+不属于某个具体对象，而属于类并由所有对象共享。它拥有独立存储，通常不计入每个对象的`sizeof`。
+
+### 13.7 C++11静态数据成员在哪里定义
+
+通常在类内声明，在一个源文件的命名空间作用域中使用`Type ClassName::member = value;`定义，定义处不再写`static`。
+
+### 13.8 静态成员函数能直接访问非静态成员吗
+
+不能，因为它没有隐式`this`，不知道应该访问哪个对象。但如果显式拿到对象，可以通过该对象访问其可见的非静态成员。
+
+### 13.9 非静态成员函数能调用静态成员函数吗
+
+可以。静态成员函数不依赖对象，普通成员函数可直接按类作用域规则调用。
+
+### 13.10 什么是友元函数
+
+友元函数是被类显式授权访问其非公有成员的非成员函数。它不是类成员，没有隐式`this`。
+
+### 13.11 友元关系有哪些特性
+
+友元是显式授权关系，通常强调单向、不传递、不自动继承，并且友元声明所在的访问区域不影响授权结果。
+
+### 13.12 为什么输出运算符通常写成非成员友元
+
+为了让`std::cout`位于左侧，左操作数必须是`std::ostream`。它不能实现成`Date`的成员函数；如果需要访问私有表示，可以声明为友元。
+
+### 13.13 什么是嵌套类
+
+定义在另一个类作用域中的类。它是独立类型，名称受外部类作用域和访问限定符控制，不会自动成为每个外部对象的数据成员。
+
+### 13.14 嵌套类如何访问外部类成员
+
+它可按嵌套类访问规则引用外部类的非公有名称；静态成员可直接使用，非静态成员需要一个具体外部类对象。
+
+### 13.15 外部类能直接访问嵌套类的私有成员吗
+
+不能仅凭嵌套关系自动访问。嵌套类如果需要授予权限，可以显式把外部类声明为友元。
+
+### 13.16 嵌套类会影响外部类大小吗
+
+只定义嵌套类不会影响外部对象大小；如果外部类包含一个嵌套类对象成员，该成员才会参与对象布局。
+
+## 十四、练习建议
+
+### 14.1 初始化顺序实验
+
+设计两个会打印构造日志的成员类型，故意调换初始化列表顺序，观察实际输出并查看`-Wreorder`警告。
+
+```bash
+g++ -std=c++11 -Wall -Wextra -Wpedantic example.cpp
+```
+
+### 14.2 `explicit`实验
+
+分别测试：
+
+```cpp
+Date first(2026);
+Date second{2026};
+// Date third = 2026;
+```
+
+再去掉`explicit`比较编译结果。
+
+### 14.3 静态成员实验
+
+统计：
+
+- 累计构造次数；
+- 当前存活对象数；
+- 拷贝构造次数；
+- 移动构造次数。
+
+观察赋值操作为什么不应增加存活对象数。
+
+### 14.4 友元输入实验
+
+为日期类输入：
+
+```text
+2024 2 29
+2023 2 29
+```
+
+验证合法日期成功写入，非法日期设置流失败状态且不修改原对象。
+
+### 14.5 嵌套类实验
+
+分别把嵌套类放在`public`和`private`区域，观察类外能否写出：
+
+```cpp
+Outer::Inner object;
+```
+
+再为嵌套类显式传入`Outer&`，读取外部对象的私有成员。
+
+## 十五、总结
+
+本篇的核心知识如下：
+
+- 构造函数体执行前，基类和数据成员已经完成初始化；
+- 初始化列表用于直接初始化成员，不是普通赋值；
+- 引用、`const`成员和无默认构造函数的类类型成员必须正确初始化；
+- 引用成员还必须满足被引用对象的生命周期要求；
+- 成员初始化顺序由声明顺序决定，不由初始化列表顺序决定；
+- `explicit`控制构造函数参与隐式转换，单实参可调用的构造函数通常应认真考虑它；
+- C++11默认成员初始化器会在构造函数未显式指定成员时提供默认初始化；
+- 静态数据成员由类共享，不属于某个对象，也不自动提供线程安全；
+- C++11普通静态数据成员通常需要类外定义，C++17才有更方便的`inline static`；
+- 静态成员函数没有`this`，但显式获得对象后仍能通过对象调用非静态成员；
+- 友元函数不是成员函数，友元关系单向、不传递、不自动继承；
+- 友元扩大访问边界，应遵循最小授权原则；
+- 嵌套类是独立类型，不会自动成为外部对象的一部分；
+- 嵌套类访问外部非静态成员时仍需要具体外部对象；
+- 封装的目的不是简单隐藏字段，而是维护不变量、降低耦合并公开稳定接口。
+
+至此，类与对象三篇已经形成完整基础：上篇理解类、对象模型和`this`，中篇掌握生命周期、复制与运算符，下篇进一步掌握初始化、类级状态、协作关系和封装边界。

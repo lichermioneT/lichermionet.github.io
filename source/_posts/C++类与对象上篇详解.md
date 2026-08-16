@@ -1,0 +1,1736 @@
+---
+title: C++类与对象（上篇）：类的定义、封装、对象模型与this指针
+date: 2026-08-15 18:00:00
+categories:
+  - C++
+tags:
+  - C++
+  - 类与对象
+  - 面向对象
+  - 封装
+  - 内存对齐
+  - this指针
+---
+
+类与对象是C++面向对象编程的基础。类负责描述一类对象共同具有的数据和行为，对象则是类在程序中的具体实例。
+
+学习这一部分时，不能只停留在`class`语法，还需要理解三个更深层的问题：类如何管理数据、一个对象在内存中实际保存什么，以及非静态成员函数如何确定自己正在操作哪个对象。
+
+本文系统讲解面向对象思想、类的定义、访问限定符、封装、类作用域、实例化、对象内存模型、内存对齐和`this`指针，并补充常见误区、可编译示例及面试问题。
+
+<!-- more -->
+
+## 一、从面向过程到面向对象
+
+### 1.1 面向过程关注处理步骤
+
+面向过程的程序通常先分析解决问题需要哪些步骤，再把步骤拆分成函数。
+
+以洗衣服为例，可以拆分为：
+
+1. 放入衣物；
+2. 加入洗涤剂；
+3. 注水；
+4. 洗涤；
+5. 漂洗；
+6. 脱水。
+
+程序的重点是“先做什么，再做什么”。
+
+```cpp
+void addClothes();
+void addDetergent();
+void wash();
+void rinse();
+void spin();
+```
+
+### 1.2 面向对象关注参与者及其职责
+
+面向对象会识别问题中的对象，并把数据和操作数据的方法放在一起。
+
+例如，一个洗衣机对象可以包含：
+
+- 当前工作模式；
+- 剩余时间；
+- 水位；
+- 启动、暂停、洗涤、排水等行为。
+
+```cpp
+class WashingMachine
+{
+public:
+    void start();
+    void pause();
+    void drain();
+
+private:
+    int _waterLevel;
+    int _remainingMinutes;
+};
+```
+
+对象之间通过公开接口协作，而对象内部负责维护自己的状态。
+
+### 1.3 不要把C和C++绝对对立
+
+“C是面向过程的，C++是面向对象的”适合作为入门对比，但并不完整。
+
+- C语言也能通过结构体和函数指针模拟面向对象设计；
+- C++既支持面向过程，也支持面向对象；
+- C++还支持泛型编程、函数式编程和模板元编程；
+- 是否采用某种范式，取决于问题与设计，而不是文件扩展名。
+
+更准确地说，C++是一门多范式编程语言，类和对象是其中非常重要的一套抽象机制。
+
+## 二、类的引入
+
+### 2.1 C语言结构体的典型写法
+
+C语言通常把数据定义在结构体中，把操作数据的函数写在结构体外部：
+
+```c
+struct Student
+{
+    char name[32];
+    int age;
+};
+
+void StudentSetAge(struct Student* student, int age)
+{
+    student->age = age;
+}
+```
+
+函数需要显式接收结构体指针，才能知道要操作哪个学生。
+
+### 2.2 C++结构体可以包含成员函数
+
+在C++中，`struct`不仅可以声明数据，还可以声明成员函数：
+
+```cpp
+#include <iostream>
+#include <string>
+
+struct Student
+{
+    void setInfo(const std::string& name, int age)
+    {
+        _name = name;
+        _age = age;
+    }
+
+    void print() const
+    {
+        std::cout << _name << ", " << _age << '\n';
+    }
+
+    std::string _name;
+    int _age;
+};
+```
+
+调用方式：
+
+```cpp
+Student student;
+student.setInfo("Peter", 18);
+student.print();
+```
+
+成员函数与数据属于同一个类型，接口的归属关系更加清晰。
+
+### 2.3 为什么C++常使用`class`
+
+`struct`和`class`都能定义类，但工程中常见的约定是：
+
+- 只承载简单公开数据时使用`struct`；
+- 需要维护不变量、隐藏实现和提供行为时使用`class`。
+
+这是一种编码习惯，不是语言强制规定。
+
+## 三、类的定义
+
+### 3.1 基本语法
+
+```cpp
+class ClassName
+{
+public:
+    // 对外接口
+
+private:
+    // 内部实现
+};
+```
+
+注意类定义结束后的分号不能省略。
+
+### 3.2 成员变量与成员函数
+
+```cpp
+class Person
+{
+public:
+    void introduce() const
+    {
+        std::cout << "name: " << _name
+                  << ", age: " << _age << '\n';
+    }
+
+private:
+    std::string _name;
+    int _age;
+};
+```
+
+其中：
+
+- `_name`和`_age`是非静态数据成员；
+- `introduce`是非静态成员函数；
+- 数据成员用于描述对象状态；
+- 成员函数用于描述对象行为。
+
+### 3.3 类内声明、类外定义
+
+复杂成员函数通常只在类中声明，在源文件中定义。
+
+头文件：
+
+```cpp
+// person.hpp
+#ifndef PERSON_HPP
+#define PERSON_HPP
+
+#include <string>
+
+class Person
+{
+public:
+    void setName(const std::string& name);
+    void introduce() const;
+
+private:
+    std::string _name;
+};
+
+#endif
+```
+
+源文件：
+
+```cpp
+// person.cpp
+#include "person.hpp"
+#include <iostream>
+
+void Person::setName(const std::string& name)
+{
+    _name = name;
+}
+
+void Person::introduce() const
+{
+    std::cout << _name << '\n';
+}
+```
+
+类外定义时必须使用`Person::`说明函数属于`Person`类作用域。
+
+### 3.4 类内定义的函数与`inline`
+
+在类定义内部给出函数体的成员函数，通常隐式具有`inline`语义：
+
+```cpp
+class Counter
+{
+public:
+    int value() const
+    {
+        return _value;
+    }
+
+private:
+    int _value = 0;
+};
+```
+
+这里的`inline`主要允许符合要求的相同定义出现在多个翻译单元中，并不保证编译器一定展开函数调用。
+
+是否真正进行内联优化，由编译器根据优化级别、函数规模和调用环境决定。
+
+### 3.5 声明与定义分离的优点
+
+- 减少头文件中的实现细节；
+- 降低模块之间的耦合；
+- 修改实现时可能减少重新编译范围；
+- 让类的公共接口更容易阅读；
+- 便于大型项目组织代码。
+
+对于非常短小、模板化或需要类内可见的函数，也可以直接定义在头文件中。
+
+### 3.6 类的前置声明
+
+只需要声明某个类存在时，可以使用前置声明：
+
+```cpp
+class User;
+
+void printUser(const User& user);
+User* findUser(int id);
+```
+
+此时`User`是不完整类型。通常可以声明它的指针或引用，但不能创建对象，也不能访问成员：
+
+```text
+User user;        // 错误：不知道User对象需要多少空间
+sizeof(User);     // 错误：类型不完整
+```
+
+前置声明可以减少不必要的头文件包含，但使用前必须理解完整类型要求。
+
+## 四、访问限定符
+
+### 4.1 三种访问权限
+
+C++类提供三种访问限定符：
+
+| 限定符 | 类外普通代码 | 派生类 | 类自身成员 |
+| --- | --- | --- | --- |
+| `public` | 可以访问 | 可以访问 | 可以访问 |
+| `protected` | 不能直接访问 | 可以按继承规则访问 | 可以访问 |
+| `private` | 不能直接访问 | 不能直接访问 | 可以访问 |
+
+本篇重点讨论类外访问。`protected`与继承相关，后续学习继承时还要进一步分析。
+
+### 4.2 访问权限的作用范围
+
+访问限定符从出现位置开始生效，直到下一个访问限定符或类定义结束：
+
+```cpp
+class Example
+{
+public:
+    void first();
+    void second();
+
+private:
+    int _value;
+    int _count;
+
+public:
+    void reset();
+};
+```
+
+同一种访问限定符可以出现多次，不过通常按接口和实现分组能让类更易读。
+
+### 4.3 `class`与`struct`的默认权限
+
+```cpp
+class ClassType
+{
+    int value; // 默认private
+};
+
+struct StructType
+{
+    int value; // 默认public
+};
+```
+
+除此之外，两者的默认继承权限也不同：
+
+- `class Derived : Base`默认为私有继承；
+- `struct Derived : Base`默认为公有继承。
+
+这两个默认值是`class`与`struct`最明确的语言差异。它们都可以拥有构造函数、析构函数、成员函数、虚函数、模板和访问限定符。
+
+### 4.4 访问控制主要在编译期检查
+
+```cpp
+class Account
+{
+private:
+    double _balance;
+};
+
+int main()
+{
+    Account account;
+    // account._balance = 100.0; // 编译错误
+}
+```
+
+访问限定符不是对对象内存进行加密。程序编译为机器代码后，内存中不会因为成员是`private`就自动获得安全隔离。
+
+因此，`private`解决的是接口与设计层面的访问控制，不是抵御恶意内存访问的安全机制。
+
+## 五、封装
+
+### 5.1 什么是封装
+
+封装是把数据与操作数据的方法组合在一起，隐藏不希望外部依赖的实现细节，只公开稳定、受控的接口。
+
+一个不封装的账户：
+
+```cpp
+struct Account
+{
+    double balance;
+};
+```
+
+外部代码可以随意写入非法状态：
+
+```cpp
+Account account;
+account.balance = -999999.0;
+```
+
+使用类进行封装：
+
+```cpp
+class Account
+{
+public:
+    bool deposit(double amount)
+    {
+        if (amount <= 0.0)
+        {
+            return false;
+        }
+
+        _balance += amount;
+        return true;
+    }
+
+    double balance() const
+    {
+        return _balance;
+    }
+
+private:
+    double _balance = 0.0;
+};
+```
+
+类的接口保证只有合法金额才能存入。
+
+### 5.2 封装不等于把所有成员都设成`private`
+
+封装的目标是管理复杂度和维护对象不变量。仅仅把字段设为`private`，再机械地为每个字段提供无条件的`set`函数，并不一定形成良好封装。
+
+例如：
+
+```cpp
+class Rectangle
+{
+public:
+    bool resize(double width, double height)
+    {
+        if (width <= 0.0 || height <= 0.0)
+        {
+            return false;
+        }
+
+        _width = width;
+        _height = height;
+        return true;
+    }
+
+    double area() const
+    {
+        return _width * _height;
+    }
+
+private:
+    double _width = 1.0;
+    double _height = 1.0;
+};
+```
+
+这里公开的是符合业务含义的`resize`和`area`，而不是毫无约束地暴露两个字段。
+
+### 5.3 封装的价值
+
+- 保护对象不变量；
+- 隐藏实现细节；
+- 降低模块耦合；
+- 减少错误使用；
+- 允许内部实现独立演进；
+- 让调用者面向稳定接口编程。
+
+### 5.4 面向对象的三大特性
+
+通常把以下三点称为面向对象三大特性：
+
+1. 封装；
+2. 继承；
+3. 多态。
+
+封装负责组织和保护对象状态；继承用于表达类型之间的关系与代码复用；多态允许通过统一接口表现不同行为。
+
+## 六、类作用域
+
+### 6.1 类会创建新的作用域
+
+```cpp
+class Person
+{
+public:
+    void print() const;
+
+private:
+    std::string _name;
+    int _age;
+};
+```
+
+`print`、`_name`和`_age`都属于`Person`类作用域。
+
+### 6.2 类外定义成员函数
+
+```cpp
+void Person::print() const
+{
+    std::cout << _name << ' ' << _age << '\n';
+}
+```
+
+`Person::`把后面的函数定义带入`Person`类作用域，因此函数体内可以直接写`_name`和`_age`。
+
+从概念上可以把它们理解为：
+
+```cpp
+this->_name
+this->_age
+```
+
+### 6.3 作用域限定符`::`
+
+`::`常见用途包括：
+
+- 访问命名空间成员：`std::cout`；
+- 定义类成员：`Person::print`；
+- 访问静态类成员：`Person::count`；
+- 访问全局作用域：`::globalValue`；
+- 访问基类成员：`Base::function()`。
+
+### 6.4 类名在类体内可直接使用
+
+```cpp
+class Node
+{
+public:
+    Node* next();
+
+private:
+    Node* _next = nullptr;
+};
+```
+
+在`Node`类作用域内部，`Node`直接表示当前类类型。
+
+类外定义时：
+
+```cpp
+Node* Node::next()
+{
+    return _next;
+}
+```
+
+## 七、类的实例化
+
+### 7.1 类与对象的关系
+
+类像设计图，描述对象应该具有哪些成员和行为；对象则是根据设计图创建出来的具体实体。
+
+```cpp
+class Date
+{
+public:
+    void set(int year, int month, int day);
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+定义类本身不会创建`Date`对象。创建具体对象才称为实例化：
+
+```cpp
+Date today;
+Date birthday;
+```
+
+### 7.2 同一个类可以创建多个对象
+
+```cpp
+Date first;
+Date second;
+```
+
+`first`和`second`各自拥有一份非静态数据成员：
+
+```text
+first:  _year _month _day
+second: _year _month _day
+```
+
+修改`first`的日期不会自动修改`second`。
+
+### 7.3 对象的常见存储期
+
+#### 自动存储期
+
+```cpp
+void function()
+{
+    Date localDate;
+}
+```
+
+对象通常在进入作用域时构造，离开作用域时析构。
+
+#### 静态存储期
+
+```cpp
+Date globalDate;
+
+void function()
+{
+    static Date sharedDate;
+}
+```
+
+这类对象的生命周期通常持续到程序结束。
+
+#### 动态存储期
+
+```cpp
+Date* pointer = new Date;
+delete pointer;
+```
+
+动态对象需要正确管理释放。现代C++优先使用自动对象、标准容器和智能指针管理资源，避免裸`new`与`delete`失配。
+
+### 7.4 对象、指针与引用
+
+```cpp
+Date date;
+Date* pointer = &date;
+Date& reference = date;
+```
+
+调用成员：
+
+```cpp
+date.set(2026, 8, 15);
+pointer->set(2026, 8, 16);
+reference.set(2026, 8, 17);
+```
+
+三种表达式最终都在操作同一个`date`对象。
+
+## 八、类对象模型
+
+### 8.1 每个对象保存什么
+
+普通情况下，每个对象主要保存自己的非静态数据成员：
+
+```cpp
+class Point
+{
+public:
+    void move(int dx, int dy)
+    {
+        _x += dx;
+        _y += dy;
+    }
+
+private:
+    int _x = 0;
+    int _y = 0;
+};
+```
+
+不同`Point`对象各自拥有`_x`和`_y`，但不会在每个对象里重复存放一份`move`机器代码。
+
+### 8.2 成员函数存放在哪里
+
+成员函数的机器代码通常位于程序的代码区域，由同类型的所有对象共享。
+
+```text
+对象p1：_x _y ┐
+对象p2：_x _y ├──共同调用Point::move代码
+对象p3：_x _y ┘
+```
+
+编译器通过隐式的`this`参数区分当前操作的是哪个对象。
+
+### 8.3 哪些成员通常计入对象大小
+
+通常会影响对象大小的内容包括：
+
+- 非静态数据成员；
+- 为满足对齐产生的填充字节；
+- 基类子对象；
+- 虚函数机制可能引入的虚表指针；
+- 虚继承等实现机制可能引入的额外信息。
+
+通常不直接计入每个对象大小的内容包括：
+
+- 普通成员函数的代码；
+- 静态成员函数；
+- 静态数据成员本体；
+- 类型名和访问限定符。
+
+具体对象布局由C++标准约束、编译器和平台ABI共同决定。
+
+### 8.4 静态数据成员不属于某个具体对象
+
+```cpp
+class Counter
+{
+public:
+    static int total;
+
+private:
+    int _value;
+};
+```
+
+每个对象各自拥有`_value`，但所有对象共享一份`Counter::total`。因此`total`本身通常不计入`sizeof(Counter)`。
+
+### 8.5 空类为什么不是零字节
+
+```cpp
+class Empty
+{};
+```
+
+通常有：
+
+```cpp
+static_assert(sizeof(Empty) >= 1, "empty object needs a distinct address");
+```
+
+完整空类对象需要拥有可区分的地址：
+
+```cpp
+Empty first;
+Empty second;
+
+std::cout << (&first == &second) << '\n'; // 0
+```
+
+如果空对象大小为零，数组中的不同元素也无法获得不同地址。
+
+### 8.6 空基类优化
+
+空类作为完整对象时大小不为零，但作为基类子对象时，编译器在满足规则的情况下可以不给它增加额外空间，这称为空基类优化，简称EBO。
+
+```cpp
+struct EmptyPolicy
+{};
+
+struct Value : EmptyPolicy
+{
+    int number;
+};
+```
+
+`sizeof(Value)`在常见实现中可能等于`sizeof(int)`，但具体结果仍要以当前编译器和ABI为准。
+
+### 8.7 成员函数再多也不一定增大对象
+
+```cpp
+class A
+{
+public:
+    void f1() {}
+    void f2() {}
+    void f3() {}
+
+private:
+    int _value;
+};
+```
+
+增加普通非虚成员函数通常不会改变`sizeof(A)`，因为函数代码不存入每个对象。
+
+但是，第一次引入虚函数通常会改变对象布局，常见实现会为对象增加虚表指针。这属于多态对象模型，后续学习多态时再详细展开。
+
+## 九、`sizeof`与对象大小
+
+### 9.1 基础示例
+
+```cpp
+#include <iostream>
+
+class A1
+{
+public:
+    void function() {}
+
+private:
+    int _value;
+};
+
+class A2
+{
+public:
+    void function() {}
+};
+
+class A3
+{};
+
+int main()
+{
+    std::cout << sizeof(A1) << '\n';
+    std::cout << sizeof(A2) << '\n';
+    std::cout << sizeof(A3) << '\n';
+}
+```
+
+在常见平台上，`A1`可能是4字节，`A2`和`A3`通常是1字节。除空类基本要求外，具体数值不能脱离编译器、数据模型和ABI绝对化。
+
+### 9.2 `sizeof`包含填充字节
+
+```cpp
+struct Layout
+{
+    char ch;
+    int number;
+};
+```
+
+成员数据合计为5字节，但`sizeof(Layout)`在常见平台上通常为8字节，因为`number`需要按自身对齐要求放置，对象末尾也可能存在尾部填充。
+
+### 9.3 对象大小必须适合组成数组
+
+```cpp
+Layout values[3];
+```
+
+相邻元素之间的距离是`sizeof(Layout)`。尾部填充保证每个数组元素中的成员仍满足对齐要求。
+
+```cpp
+std::cout << static_cast<const void*>(&values[0]) << '\n';
+std::cout << static_cast<const void*>(&values[1]) << '\n';
+```
+
+### 9.4 `sizeof`不会执行普通表达式
+
+```cpp
+int value = 10;
+std::size_t size = sizeof(++value);
+```
+
+在这里`++value`处于不求值语境，`value`仍然是10。
+
+同理：
+
+```cpp
+Date* pointer = nullptr;
+std::size_t size = sizeof(*pointer);
+```
+
+`sizeof(*pointer)`只需要`Date`的完整类型，不会真的解引用空指针。
+
+## 十、内存对齐
+
+### 10.1 为什么需要内存对齐
+
+许多处理器访问满足自然对齐的数据更高效，有些体系结构甚至要求特定类型必须按规定边界访问。
+
+对齐还帮助编译器和ABI形成稳定的对象布局、数组步长以及函数调用约定。
+
+### 10.2 `alignof`
+
+C++11可以用`alignof`查询类型的对齐要求：
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    std::cout << alignof(char) << '\n';
+    std::cout << alignof(int) << '\n';
+    std::cout << alignof(double) << '\n';
+}
+```
+
+常见平台上，`char`对齐为1、`int`对齐为4、`double`对齐为8，但这些数值不是所有平台都必须相同。
+
+### 10.3 基本布局规律
+
+对于普通标准布局类型，可以先用以下规律理解：
+
+1. 第一个非静态数据成员通常从对象起始位置开始；
+2. 每个成员的起始偏移需要满足该成员的有效对齐要求；
+3. 编译器可能在成员之间插入内部填充；
+4. 对象整体大小通常是对象对齐值的整数倍；
+5. 编译器可能在对象末尾加入尾部填充；
+6. 嵌套对象作为一个成员时，也要满足其自身对齐要求。
+
+课件中常见的“成员对齐数等于成员大小与默认对齐数的较小值”是针对特定编译器打包规则的简化描述。标准层面更应使用`alignof`和实现ABI理解，不能把成员大小直接等同于对齐要求。
+
+### 10.4 手工计算示例
+
+```cpp
+struct Example
+{
+    char first;   // 偏移0
+    int number;   // 常见情况下偏移4
+    char second;  // 常见情况下偏移8
+};
+```
+
+在`alignof(int) == 4`的常见平台上：
+
+```text
+偏移0：first，占1字节
+偏移1-3：内部填充3字节
+偏移4-7：number，占4字节
+偏移8：second，占1字节
+偏移9-11：尾部填充3字节
+总大小：12字节
+```
+
+应该通过当前环境验证：
+
+```cpp
+std::cout << sizeof(Example) << '\n';
+std::cout << alignof(Example) << '\n';
+```
+
+### 10.5 成员顺序会影响对象大小
+
+```cpp
+struct PoorLayout
+{
+    char first;
+    double value;
+    char second;
+    int count;
+};
+
+struct BetterLayout
+{
+    double value;
+    int count;
+    char first;
+    char second;
+};
+```
+
+在许多平台上，把对齐要求较大的成员集中放在前面可以减少填充。但调整成员顺序还要考虑：
+
+- 代码可读性；
+- ABI兼容；
+- 缓存局部性；
+- 热数据和冷数据分布；
+- 与外部协议或文件格式的映射。
+
+不能只为节省几个字节而破坏稳定接口。
+
+### 10.6 嵌套对象的对齐
+
+```cpp
+struct Inner
+{
+    char ch;
+    int value;
+};
+
+struct Outer
+{
+    char prefix;
+    Inner inner;
+    char suffix;
+};
+```
+
+`inner`成员的起始位置必须满足`alignof(Inner)`，`Outer`整体也要满足自己的对齐要求。
+
+### 10.7 `alignas`
+
+C++11可以使用`alignas`请求更严格的对齐：
+
+```cpp
+struct alignas(32) CacheBlock
+{
+    char data[32];
+};
+
+static_assert(alignof(CacheBlock) >= 32,
+              "CacheBlock alignment is too small");
+```
+
+常见用途包括SIMD数据、硬件接口和缓存优化。请求不能违反标准对有效对齐的约束。
+
+### 10.8 `#pragma pack`不是标准C++语法
+
+某些编译器支持：
+
+```cpp
+#pragma pack(push, 1)
+struct PacketHeader
+{
+    char type;
+    int length;
+};
+#pragma pack(pop)
+```
+
+它可以改变成员的有效对齐和对象布局，但属于编译器扩展。降低对齐可能造成性能下降，甚至在某些体系结构上产生访问问题。
+
+网络协议和磁盘格式还涉及字节序、字段编码和版本兼容，不能仅依靠打包结构体直接完成可靠序列化。
+
+### 10.9 `offsetof`的使用限制
+
+可以使用`offsetof`观察标准布局类型的成员偏移：
+
+```cpp
+#include <cstddef>
+#include <iostream>
+
+struct Data
+{
+    char ch;
+    int value;
+};
+
+int main()
+{
+    std::cout << offsetof(Data, ch) << '\n';
+    std::cout << offsetof(Data, value) << '\n';
+}
+```
+
+对于非标准布局类型，不能随意依赖`offsetof`和具体内存布局。
+
+## 十一、`this`指针
+
+### 11.1 为什么需要`this`
+
+```cpp
+class Date
+{
+public:
+    void setDate(int year, int month, int day)
+    {
+        _year = year;
+        _month = month;
+        _day = day;
+    }
+
+private:
+    int _year;
+    int _month;
+    int _day;
+};
+```
+
+创建两个对象：
+
+```cpp
+Date first;
+Date second;
+
+first.setDate(2026, 8, 15);
+second.setDate(2027, 1, 1);
+```
+
+两个对象调用的是同一份`Date::setDate`函数代码。函数需要知道当前应修改`first`还是`second`，因此非静态成员函数拥有一个指向当前对象的隐式`this`参数。
+
+### 11.2 成员访问的概念展开
+
+源代码：
+
+```cpp
+void Date::setDate(int year, int month, int day)
+{
+    _year = year;
+    _month = month;
+    _day = day;
+}
+```
+
+可以从概念上理解为：
+
+```cpp
+void Date::setDate(int year, int month, int day)
+{
+    this->_year = year;
+    this->_month = month;
+    this->_day = day;
+}
+```
+
+对象调用也可以概念化为编译器隐式传入地址：
+
+```text
+first.setDate(2026, 8, 15)
+
+概念上类似：
+setDate(&first, 2026, 8, 15)
+```
+
+最后一段只是帮助理解，不能在C++源代码中把普通成员函数直接当成完全相同的自由函数调用。
+
+### 11.3 `this`的准确类型
+
+在非`const`成员函数中，`this`表达式的类型是指向当前类的指针：
+
+```cpp
+class Example
+{
+public:
+    void function()
+    {
+        static_assert(std::is_same<decltype(this), Example*>::value,
+                      "unexpected this type");
+    }
+};
+```
+
+在`const`成员函数中：
+
+```cpp
+class Example
+{
+public:
+    void function() const
+    {
+        static_assert(
+            std::is_same<decltype(this), const Example*>::value,
+            "unexpected this type");
+    }
+};
+```
+
+`this`本身不能被重新赋值。入门资料常把它类比为`ClassName* const`形式的隐藏形参，这有助于理解“不能改指向”，但从`decltype(this)`看，其表达式类型分别是`ClassName*`或`const ClassName*`。
+
+上面的示例需要包含：
+
+```cpp
+#include <type_traits>
+```
+
+### 11.4 `this`不存放在对象内部
+
+`this`是非静态成员函数调用时产生的隐式参数，不是每个对象中的数据成员。
+
+因此：
+
+- `sizeof`对象不会因为存在`this`而增加一个指针大小；
+- 同一个对象调用不同成员函数时，都可获得指向该对象的`this`；
+- 静态成员函数没有当前对象，因此没有`this`。
+
+### 11.5 `this`如何传递由ABI决定
+
+某些旧的32位MSVC调用约定可能通过`ECX`传递`this`，但这不是C++语言规则。
+
+不同环境可能使用：
+
+- 不同寄存器；
+- 栈；
+- 编译器内部优化后的形式；
+- 完全消除显式传递。
+
+Windows x64、Linux x86-64、ARM和不同编译器都有各自的ABI约定。面试时应回答：`this`是隐式参数，具体传递位置由编译器、平台和ABI决定。
+
+### 11.6 使用`this`解决同名遮蔽
+
+```cpp
+class Date
+{
+public:
+    void setYear(int year)
+    {
+        this->_year = year;
+    }
+
+private:
+    int _year;
+};
+```
+
+形参`year`与成员`_year`名字不同，实际上不必写`this->`。如果使用同名成员：
+
+```cpp
+class Date
+{
+public:
+    void setYear(int year)
+    {
+        this->year = year;
+    }
+
+private:
+    int year;
+};
+```
+
+`this->year`表示成员，右侧`year`表示形参。
+
+### 11.7 返回`*this`实现链式调用
+
+```cpp
+class Counter
+{
+public:
+    Counter& add(int value)
+    {
+        _value += value;
+        return *this;
+    }
+
+    Counter& reset()
+    {
+        _value = 0;
+        return *this;
+    }
+
+private:
+    int _value = 0;
+};
+```
+
+调用：
+
+```cpp
+Counter counter;
+counter.add(1).add(2).reset().add(10);
+```
+
+`this`是指针，`*this`是当前对象本身。返回`Counter&`避免复制，并继续对同一个对象操作。
+
+### 11.8 `const`成员函数中的`this`
+
+```cpp
+class Counter
+{
+public:
+    int value() const
+    {
+        return _value;
+    }
+
+private:
+    int _value = 0;
+};
+```
+
+在`value() const`中，`this`指向`const Counter`，因此普通数据成员不能被修改。
+
+`const`对象只能调用不会破坏其逻辑状态的`const`成员函数：
+
+```cpp
+const Counter counter;
+int value = counter.value();
+```
+
+### 11.9 静态成员函数没有`this`
+
+```cpp
+class Math
+{
+public:
+    static int add(int left, int right)
+    {
+        return left + right;
+    }
+};
+```
+
+调用静态函数不需要具体对象：
+
+```cpp
+int result = Math::add(1, 2);
+```
+
+静态成员函数没有`this`，因此不能直接访问非静态数据成员或非静态成员函数。
+
+## 十二、空指针调用成员函数的问题
+
+### 12.1 看似能运行的代码
+
+```cpp
+class A
+{
+public:
+    void show()
+    {
+        std::cout << "show\n";
+    }
+
+private:
+    int _value = 0;
+};
+
+A* pointer = nullptr;
+pointer->show();
+```
+
+某些编译器和构建配置下，这段代码表面上可能打印`show`，因为函数体没有访问任何成员数据。
+
+### 12.2 正确结论：行为未定义
+
+通过空指针调用非静态成员函数不满足有效对象调用要求，属于未定义行为。不能因为一次运行没有崩溃，就认为代码合法。
+
+编译器可以假设非静态成员函数调用中的当前对象有效，并据此进行优化。程序可能：
+
+- 看似正常运行；
+- 在调用位置崩溃；
+- 在函数访问成员时崩溃；
+- 被优化为意料之外的结果。
+
+### 12.3 访问成员时通常更容易暴露问题
+
+```cpp
+void printValue()
+{
+    std::cout << _value << '\n';
+}
+```
+
+概念上相当于访问`this->_value`。当`this`为空时，需要从空地址附近读取数据，通常会触发访问错误，但标准层面的结论仍然是未定义行为，而不是保证在某一行崩溃。
+
+### 12.4 不要在成员函数内部用`if (this == nullptr)`自救
+
+```text
+void show()
+{
+    if (this == nullptr)
+    {
+        return;
+    }
+}
+```
+
+在调用函数之前，程序就已经违反了对有效对象的要求。优化器也可能基于`this`应当非空的假设删除检查。
+
+正确做法是在调用前检查对象指针：
+
+```cpp
+if (pointer != nullptr)
+{
+    pointer->show();
+}
+```
+
+或者设计接口避免裸的可空对象指针。
+
+## 十三、综合示例：封装良好的日期类
+
+下面使用C++11实现一个完整的`Date`类，综合展示类定义、访问控制、类外定义、对象实例化、`this`和链式调用。
+
+```cpp
+#include <iomanip>
+#include <iostream>
+
+class Date
+{
+public:
+    Date& set(int year, int month, int day);
+    Date& addOneDay();
+    void print() const;
+
+    int year() const
+    {
+        return _year;
+    }
+
+    int month() const
+    {
+        return _month;
+    }
+
+    int day() const
+    {
+        return _day;
+    }
+
+private:
+    static bool isLeapYear(int year);
+    static int daysInMonth(int year, int month);
+
+private:
+    int _year = 1970;
+    int _month = 1;
+    int _day = 1;
+};
+
+bool Date::isLeapYear(int year)
+{
+    return (year % 400 == 0) ||
+           (year % 4 == 0 && year % 100 != 0);
+}
+
+int Date::daysInMonth(int year, int month)
+{
+    static const int days[] = {
+        0, 31, 28, 31, 30, 31, 30,
+        31, 31, 30, 31, 30, 31
+    };
+
+    if (month == 2 && isLeapYear(year))
+    {
+        return 29;
+    }
+
+    return days[month];
+}
+
+Date& Date::set(int year, int month, int day)
+{
+    if (year < 1 || month < 1 || month > 12)
+    {
+        return *this;
+    }
+
+    if (day < 1 || day > daysInMonth(year, month))
+    {
+        return *this;
+    }
+
+    this->_year = year;
+    this->_month = month;
+    this->_day = day;
+
+    return *this;
+}
+
+Date& Date::addOneDay()
+{
+    ++_day;
+
+    if (_day > daysInMonth(_year, _month))
+    {
+        _day = 1;
+        ++_month;
+
+        if (_month > 12)
+        {
+            _month = 1;
+            ++_year;
+        }
+    }
+
+    return *this;
+}
+
+void Date::print() const
+{
+    std::cout << std::setfill('0')
+              << std::setw(4) << _year << '-'
+              << std::setw(2) << _month << '-'
+              << std::setw(2) << _day << '\n';
+}
+
+int main()
+{
+    Date first;
+    Date second;
+
+    first.set(2024, 2, 28).addOneDay().print();
+    second.set(2025, 12, 31).addOneDay().print();
+
+    std::cout << "first year: " << first.year() << '\n';
+    std::cout << "second year: " << second.year() << '\n';
+
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+2024-02-29
+2026-01-01
+first year: 2024
+second year: 2026
+```
+
+### 13.1 示例体现的知识点
+
+1. 数据成员全部设为`private`，由公开接口维护合法日期；
+2. 接口声明放在类体中，较长实现放在类外；
+3. 类外定义使用`Date::`进入类作用域；
+4. 两个对象分别保存自己的年月日；
+5. 普通成员函数通过`this`操作当前对象；
+6. `print`和访问函数使用`const`，允许常对象调用；
+7. `set`和`addOneDay`返回`*this`，支持链式调用；
+8. 静态辅助函数不依赖具体对象，因此没有`this`；
+9. 闰年规则和月份天数被隐藏在类内部；
+10. 无效日期不会破坏对象原有状态。
+
+## 十四、对象布局实验
+
+下面的代码可以在自己的编译器上观察大小、对齐和成员偏移：
+
+```cpp
+#include <cstddef>
+#include <iostream>
+
+struct LayoutA
+{
+    char first;
+    int value;
+    char second;
+};
+
+struct LayoutB
+{
+    int value;
+    char first;
+    char second;
+};
+
+class Empty
+{};
+
+class OnlyFunction
+{
+public:
+    void function() {}
+};
+
+int main()
+{
+    std::cout << "LayoutA size: " << sizeof(LayoutA) << '\n';
+    std::cout << "LayoutA align: " << alignof(LayoutA) << '\n';
+    std::cout << "LayoutA.value offset: "
+              << offsetof(LayoutA, value) << '\n';
+
+    std::cout << "LayoutB size: " << sizeof(LayoutB) << '\n';
+    std::cout << "Empty size: " << sizeof(Empty) << '\n';
+    std::cout << "OnlyFunction size: " << sizeof(OnlyFunction) << '\n';
+}
+```
+
+不要提前死记输出数字。先手工分析，再在GCC、Clang或MSVC中编译验证，并比较32位和64位平台的差异。
+
+## 十五、常见错误与误区
+
+### 15.1 忘记类定义末尾的分号
+
+```text
+class Student
+{
+}
+```
+
+修正：
+
+```cpp
+class Student
+{
+};
+```
+
+### 15.2 把类外定义写成普通自由函数
+
+```text
+void print()
+{
+    std::cout << _name;
+}
+```
+
+修正：
+
+```cpp
+void Person::print() const
+{
+    std::cout << _name;
+}
+```
+
+### 15.3 `class`中忘记写`public`
+
+`class`的默认访问权限是`private`。如果公开成员函数前没有`public:`，类外就不能调用。
+
+### 15.4 直接公开所有数据成员
+
+问题：外部代码可以绕过检查，破坏对象不变量。
+
+修正：根据类型职责设计公开操作，让类自己管理状态。
+
+### 15.5 把`struct`理解成只能存数据
+
+在C++中，`struct`也能拥有成员函数、构造函数、虚函数和访问限定符。它与`class`最主要的语言差异是默认成员访问权限和默认继承权限。
+
+### 15.6 认为成员函数代码存放在每个对象中
+
+普通成员函数代码由同类型对象共享，不会在每个对象中重复保存。对象通过隐式`this`参数区分当前实例。
+
+### 15.7 认为类大小只是成员大小简单相加
+
+对象大小还可能包含内部填充、尾部填充、基类子对象、虚表指针及ABI所需的其他信息。
+
+### 15.8 把成员大小当成对齐要求
+
+类型大小和类型对齐有关，但不是同一个概念。应使用`sizeof(T)`查询大小，用`alignof(T)`查询对齐要求。
+
+### 15.9 认为空类大小在所有场景都是1
+
+完整空类对象通常至少占1字节，以保证不同对象地址可区分。但空类作为基类时可能应用空基类优化，不额外增加派生对象大小。
+
+### 15.10 认为`this`固定存放在`ECX`
+
+寄存器或栈位置由平台ABI、编译器和优化决定。C++语言只规定相关调用语义，不规定必须使用某个寄存器。
+
+### 15.11 认为`this`的精确类型是`Class* const`
+
+这是一种常见的教学类比。更精确地说，非`const`成员函数中的`decltype(this)`是`Class*`，`const`成员函数中是`const Class*`，而`this`表达式本身不能被赋值。
+
+### 15.12 通过空指针调用不访问成员的函数
+
+即使某次运行看起来正常，通过空指针调用非静态成员函数仍然是未定义行为。必须在调用之前确保对象有效。
+
+## 十六、面试常见问题
+
+### 16.1 什么是类，什么是对象
+
+类是对一类实体共同数据和行为的抽象描述；对象是类的具体实例，拥有自己的对象状态和生命周期。
+
+### 16.2 面向对象和面向过程有什么区别
+
+面向过程主要围绕解决问题的步骤和函数组织程序；面向对象主要围绕对象、状态、职责与交互组织程序。C++支持两种方式，也支持其他编程范式。
+
+### 16.3 `struct`和`class`有什么区别
+
+二者都能定义完整的C++类。`struct`的成员和继承默认是`public`，`class`的成员和继承默认是`private`。工程中还常用`struct`表达简单数据聚合，用`class`表达需要封装和维护不变量的类型。
+
+### 16.4 什么是封装
+
+封装是把数据及其操作组织到类型内部，隐藏实现细节，通过受控接口维护对象不变量并降低模块耦合。
+
+### 16.5 类内定义成员函数一定会内联吗
+
+不一定。类内定义通常隐式具有`inline`语义，但是否真正展开调用由编译器优化决定。
+
+### 16.6 对象中存放成员函数吗
+
+通常不存放普通成员函数代码。对象主要保存非静态数据成员和对象模型所需的额外信息，成员函数代码由同类对象共享。
+
+### 16.7 静态数据成员计入对象大小吗
+
+静态数据成员属于类本身并由所有对象共享，它的存储不在每个对象内部，因此本体通常不计入`sizeof`对象。
+
+### 16.8 空类为什么至少需要一个字节
+
+完整对象需要拥有可区分的地址，同时数组的不同元素也必须能够定位。标准保证完整对象具有非零大小，常见空类大小为1。
+
+### 16.9 为什么需要内存对齐
+
+对齐能够满足硬件访问要求，改善访问效率，并使对象、数组和ABI布局遵循稳定规则。代价是可能出现填充字节。
+
+### 16.10 如何计算类的大小
+
+先考虑非静态数据成员、基类子对象和可能的虚函数机制，再根据各部分对齐要求计算内部填充、尾部填充以及对象整体对齐。静态成员和普通成员函数代码不按每个对象计入。
+
+### 16.11 什么是`this`指针
+
+`this`是非静态成员函数中的隐式当前对象指针，使共享的成员函数代码能够访问具体调用对象的成员。
+
+### 16.12 `this`存在哪里
+
+它不是对象中的数据成员，而是调用非静态成员函数时的隐式参数。具体通过寄存器还是栈传递，由平台ABI、编译器和优化决定。
+
+### 16.13 静态成员函数为什么没有`this`
+
+静态成员函数属于类作用域，但调用不依赖具体对象，因此不存在唯一的当前对象，也就没有`this`。
+
+### 16.14 可以通过空指针调用不访问成员的成员函数吗
+
+不可以。即使函数体没有显式访问成员，这种调用仍然是未定义行为，不能依赖偶然的运行结果。
+
+### 16.15 `this`在`const`成员函数中是什么类型
+
+`decltype(this)`是指向常量当前类对象的指针，即`const ClassName*`，因此不能通过它修改普通数据成员。
+
+## 十七、学习与调试建议
+
+### 17.1 主动观察对象大小
+
+为不同成员顺序、空类、包含虚函数的类分别输出：
+
+```cpp
+sizeof(Type)
+alignof(Type)
+```
+
+不要只背结论，要比较实际平台结果。
+
+### 17.2 查看成员偏移
+
+对于标准布局类型，可以使用：
+
+```cpp
+offsetof(Type, member)
+```
+
+结合手工画出的字节布局理解内部填充和尾部填充。
+
+### 17.3 查看汇编理解`this`
+
+使用GCC可以生成汇编：
+
+```bash
+g++ -std=c++11 -O0 -S example.cpp -o example.s
+```
+
+再比较两个对象调用同一个非静态成员函数时，当前对象地址如何作为参数传入。
+
+开启优化后再次观察：
+
+```bash
+g++ -std=c++11 -O2 -S example.cpp -o example-O2.s
+```
+
+你可能会发现函数被内联，显式的成员函数调用结构已经被优化掉。这正说明机器代码实现不能简单等同于源代码抽象。
+
+### 17.4 使用编译器警告和检查工具
+
+GCC或Clang建议至少开启：
+
+```bash
+-Wall -Wextra -Wpedantic
+```
+
+调试未定义行为时，可以在支持环境中使用：
+
+```bash
+-fsanitize=address,undefined
+```
+
+这些工具能帮助发现空指针、越界访问和部分生命周期错误。
+
+## 十八、总结
+
+本篇需要掌握的核心关系如下：
+
+- 类描述数据和行为，对象是类的具体实例；
+- C++是多范式语言，面向对象不是唯一编程方式；
+- `class`和`struct`都能定义类，主要区别是默认访问与继承权限；
+- 封装的本质是管理状态、维护不变量和隐藏实现；
+- 类定义会创建新的作用域，类外定义成员需要使用`ClassName::`；
+- 每个对象拥有自己的非静态数据成员，普通成员函数代码由对象共享；
+- 对象大小不仅取决于成员大小，还受对齐、填充、继承和多态实现影响；
+- 空类完整对象具有非零大小，但作为基类时可能应用空基类优化；
+- `sizeof`查询大小，`alignof`查询对齐要求，二者不能混为一谈；
+- `this`是非静态成员函数的隐式当前对象指针，不存放在对象中；
+- `this`的传递位置属于ABI实现细节，不由C++标准指定；
+- 通过空指针调用非静态成员函数是未定义行为，不能依赖“没有访问成员就没事”。
+
+理解这些内容后，再学习构造函数、析构函数、拷贝构造、运算符重载、继承和多态时，就能把语法与对象生命周期、内存布局和编译器实现联系起来。
