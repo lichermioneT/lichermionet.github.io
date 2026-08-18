@@ -12,6 +12,7 @@ menu:
     C 语言: /columns/c-language/ || anzhiyu-icon-cube
     数据结构: /columns/data-structures/ || anzhiyu-icon-shapes
     设计模式: /columns/design-patterns/ || anzhiyu-icon-lightbulb
+    
   文章:
     归档: /archives/ || anzhiyu-icon-box-archive
     分类: /categories/ || anzhiyu-icon-shapes
@@ -292,7 +293,6 @@ subtitle:
   sub:
     - 野马也，尘埃也，生物之以息相吹也
     - 泉涸，鱼相与处于陆，相呴以湿，相濡以沫，不如相忘于江湖
-    - 野马也，尘埃也，生物之以息相吹也
     - 至人无己，神人无功，圣人无名
     - 藐姑射之山，有神人居焉。肌肤若冰雪，绰约若处子
     - 万世之后而一遇大圣知其解者，是旦暮遇之也
