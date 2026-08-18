@@ -21,6 +21,26 @@ menu:
     GitHub: https://github.com/lichermioneT || anzhiyu-icon-github
   读书: /reading/ || anzhiyu-icon-book-open
 
+# # 顶部导航：采用“分组导航”，复刻参考站点的信息层级，但内容按你的技术方向组织。
+# menu:
+#   专栏:
+#     C++: /columns/cpp/
+#     Linux: /columns/linux/
+#     C 语言: /columns/c-language/
+#     网络编程: /columns/network/
+#     数据结构: /columns/data-structures/
+#     设计模式: /columns/design-patterns/
+#     数据库: /columns/database/
+#   文章:
+#     归档: /archives/ || anzhiyu-icon-box-archive
+#     分类: /categories/ || anzhiyu-icon-shapes
+#     标签: /tags/ || anzhiyu-icon-tags
+#   关于:
+#     关于本站: /about/ || anzhiyu-icon-paper-plane
+#     GitHub: https://github.com/lichermioneT || anzhiyu-icon-github
+#   读书: /reading/ || anzhiyu-icon-book-open
+
+
 # 关闭另一套横向项目导航，避免和上方菜单重复。
 nav:
   enable: false
@@ -223,10 +243,10 @@ sidebar:
 
 h2Divider: true
 table_interlaced_discoloration: true
-article_double_row: true
+article_double_row: false
 index_site_info_top:
 index_top_img_height: 380px
-category_ui: index
+category_ui: default
 tag_ui: index
 footer_bg: false
 
