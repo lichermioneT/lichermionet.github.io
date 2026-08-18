@@ -9,8 +9,6 @@ menu:
   专栏:
     C++: /categories/cpp/ || anzhiyu-icon-book
     Linux: /categories/linux/ || anzhiyu-icon-shapes
-    力扣: /categories/leetcode/ || anzhiyu-icon-code
-    前端: /categories/frontend/ || anzhiyu-icon-laptop-code
     C 语言: /columns/c-language/ || anzhiyu-icon-cube
     数据结构: /columns/data-structures/ || anzhiyu-icon-shapes
     设计模式: /columns/design-patterns/ || anzhiyu-icon-lightbulb
@@ -446,7 +444,7 @@ home_top:
   enable: true
   timemode: date
   title: Lichermione 的技术栈
-  subTitle: C++ 后端、力扣刷题与前端实践
+  subTitle: C++ 后端学习与项目实践
   siteText: lichermionet.github.io
   category:
     - name: C++
@@ -459,16 +457,6 @@ home_top:
       shadow: var(--anzhiyu-shadow-green)
       class: green
       icon: anzhiyu-icon-shapes
-    - name: 力扣
-      path: /categories/leetcode/
-      shadow: var(--anzhiyu-shadow-red)
-      class: red
-      icon: anzhiyu-icon-code
-    - name: 前端
-      path: /categories/frontend/
-      shadow: var(--anzhiyu-shadow-blue)
-      class: blue
-      icon: anzhiyu-icon-laptop-code
     - name: C 语言
       path: /columns/c-language/
       shadow: var(--anzhiyu-shadow-red)

@@ -10,8 +10,6 @@ keywords:
   - 网络编程
   - 数据结构
   - 数据库
-  - 力扣
-  - 前端
 author: Lichermione
 language: zh-CN
 timezone: Asia/Shanghai
@@ -69,8 +67,6 @@ category_map:
   设计模式: design-patterns 
   数据库: database 
   读书: reading 
-  力扣: leetcode
-  前端: frontend
 tag_map: 
   C++: cpp 
   Linux: linux 
