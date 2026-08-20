@@ -2,7 +2,7 @@
 title: 计算机网络基础（三）：IP、以太网、ARP、DNS与NAT
 date: 2026-08-20 16:10:00
 categories:
-  - 计算机网络
+  - Linux
 tags:
   - IPv4
   - 子网划分

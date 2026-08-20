@@ -2,7 +2,7 @@
 title: HTTPS协议原理与TLS握手详解：证书、密钥协商与TLS 1.3
 date: 2026-08-20 16:30:00
 categories:
-  - 计算机网络
+  - Linux
 tags:
   - HTTPS
   - TLS

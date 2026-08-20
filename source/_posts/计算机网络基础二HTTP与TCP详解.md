@@ -2,7 +2,7 @@
 title: 计算机网络基础（二）：HTTP报文与TCP可靠传输机制
 date: 2026-08-20 16:00:00
 categories:
-  - 计算机网络
+  - Linux
 tags:
   - 计算机网络
   - HTTP
