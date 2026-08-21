@@ -66,7 +66,7 @@ IP 地址用于在网络层标识通信接口和路由目标。一个网络包�
 
 ```c
 #include <arpa/inet.h>
-
+//一般是 ip地址和端口的
 uint16_t network_port = htons(host_port);
 uint16_t host_port = ntohs(network_port);
 uint32_t network_value = htonl(host_value);
@@ -86,6 +86,25 @@ struct sockaddr
 ```
 
 实际编程通常准备具体地址结构，再强制转换为 `struct sockaddr *`。
+
+```c++
+struct sockaddr_in
+{
+    sa_family_t    sin_family; /* address family: AF_INET */
+    in_port_t      sin_port;   /* port in network byte order */
+    struct in_addr sin_addr;   /* internet address */
+ };
+```
+
+```c++
+/* Internet address. */
+ struct in_addr 
+ {
+    uint32_t   s_addr;     /* address in network byte order */
+ };
+```
+
+
 
 ### 4.2 IPv4 地址
 
@@ -108,7 +127,25 @@ IPv6 使用：
 struct sockaddr_in6
 ```
 
+```c++
+struct sockaddr_in6 
+{
+      sa_family_t     sin6_family;   /* AF_INET6 */
+       in_port_t       sin6_port;     /* port number */
+       uint32_t        sin6_flowinfo; /* IPv6 flow information */
+       struct in6_addr sin6_addr;     /* IPv6 address */
+       uint32_t        sin6_scope_id; /* Scope ID (new in 2.4) */
+  };
+
+  struct in6_addr
+  {
+       unsigned char   s6_addr[16];   /* IPv6 address */
+   };
+```
+
 同时支持 IPv4/IPv6 和域名时，更推荐使用 `getaddrinfo` 与 `sockaddr_storage`，不要把程序结构写死为 IPv4。
+
+
 
 ## 五、地址转换
 
