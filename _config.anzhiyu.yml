@@ -12,6 +12,7 @@ menu:
     C 语言: /columns/c-language/ || anzhiyu-icon-cube
     数据结构: /columns/data-structures/ || anzhiyu-icon-shapes
     设计模式: /columns/design-patterns/ || anzhiyu-icon-lightbulb
+    MySQL: /columns/mysql/ || anzhiyu-icon-lightbulb
     
   文章:
     归档: /archives/ || anzhiyu-icon-box-archive
