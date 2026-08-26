@@ -1002,74 +1002,993 @@ public:
 };
 ```
 
+## LCR179.查找总价格为目标值的两个商品
 
+购物车内的商品价格按照升序记录于数组 `price`。请在购物车中找到两个商品的价格总和刚好是 `target`。若存在多种情况，返回任一结果即可。
 
-**c代码**
-
-```
-
-```
-
-**c++代码**
+**示例 1：**
 
 ```
-
+输入：price = [3, 9, 12, 15], target = 18
+输出：[3,15] 或者 [15,3]
 ```
 
-
-
-**c代码**
+**示例 2：**
 
 ```
-
+输入：price = [8, 21, 27, 34, 52, 66], target = 61
+输出：[27,34] 或者 [34,27]
 ```
 
-**c++代码**
+**提示：**
 
-```
-
-```
+- `1 <= price.length <= 10^5`
+- `1 <= price[i] <= 10^6`
+- `1 <= target <= 2*10^6`
 
 
 
 **c代码**
 
-```
+```c
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* twoSum(int* price, int priceSize, int target, int* returnSize) 
+{
+    // 升序很关键的
+    // *returnSize = 2;
+    // int* ret = (int*)malloc(sizeof(int)*2);
 
+    // int left = 0;
+    // int right = priceSize - 1;
+    // while(left < right)
+    // {
+    //     if(price[left] + price[right] > target)
+    //     {
+    //         right--;
+    //     }
+    //     else if(price[left] + price[right] < target)
+    //     {
+    //         left++;
+    //     }
+    //     else 
+    //     {
+    //         ret[0] = price[left];
+    //         ret[1] = price[right];
+    //         break;
+    //     }
+    // }
+    // return ret;
+
+    *returnSize = 2;
+    int* ret = (int*)malloc(sizeof(int) * 2);
+
+    int left = 0;
+    int right = priceSize - 1;
+    while(left < right)
+    {
+        if(price[left] + price[right] > target)
+        {
+            right--;
+        }
+        else if(price[left] + price[right] < target)
+        {
+            left++;
+        }
+        else 
+        {
+            ret[0] = price[left];
+            ret[1] = price[right];
+            break;
+        }
+    }
+
+    return ret;
+}
 ```
 
 **c++代码**
 
+```c++
+class Solution 
+{
+public:
+    vector<int> twoSum(vector<int>& price, int target) 
+    {
+    // 1.找到左右指针
+        int sz = price.size();
+        int left = 0;
+        int right = sz - 1;
+        vector<int> v;
+    // 2.左指针<右指针 中间一定有数据的
+        while(left < right)
+        {   
+            // 根据单调性，大了，需要减小，right--
+            if(price[left] + price[right] > target)
+            {
+                right--;
+            }
+            // 根据单调性，小了，需要增大，left++
+            else if(price[left]  + price[right] < target)
+            {
+                left++;
+            }
+            // 找到了，
+            else 
+            {
+                v.push_back(price[left]);
+                v.push_back(price[right]);
+                // 注意，注意，否则死循环的。需要break;
+                break;
+            }
+        }
+
+        return v;
+
+        // int sz = price.size();
+        // int left = 0;
+        // int right = sz - 1;
+        // vector<int> v;
+        // while(left != right)
+        // {
+        //     if(price[left] + price[right] > target)
+        //     {
+        //         right--;  // 右边到左边递减
+        //     }
+        //     else if(price[left] + price[right] < target)
+        //     {
+        //         left++; //  左边到右边递增
+        //     }
+        //     else 
+        //     {
+        //         v.push_back(price[left]);
+        //         v.push_back(price[right]);
+        //         break;
+        //     }
+        // }
+        // return v;
+
+        // vector<int> v;
+        // int sz = price.size();  
+        // for(int i  = 0; i < sz - 1; i++)
+        // {
+        //     for(int j = i + 1; j < sz; j++)
+        //     {
+        //         if(price[i] + price[j] == target)
+        //         {
+        //             v.push_back(price[i]);
+        //             v.push_back(price[j]);
+        //             break;
+        //         }
+        //     }
+        // }
+        // return v;
+    }
+};
 ```
 
+## 15.三数之和
+
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
+
+**注意：**答案中不可以包含重复的三元组。
+
+**示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
 ```
 
+**示例 2：**
 
+```
+输入：nums = [0,1,1]
+输出：[]
+解释：唯一可能的三元组和不为 0 。
+```
+
+**示例 3：**
+
+```
+输入：nums = [0,0,0]
+输出：[[0,0,0]]
+解释：唯一可能的三元组和为 0 。
+```
+
+**提示：**
+
+- `3 <= nums.length <= 3000`
+- `-105 <= nums[i] <= 105`
 
 **c代码**
 
-```
+```c
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** threeSum(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) 
+{
+    // for(int i = 0; i < numsSize - 1; i++)
+    // {
+    //     for(int j = 0; i < numsSize - 1 - i; j++)
+    //     {
+    //         if(nums[j] > nums[j + 1])
+    //         {
+    //             int temp = nums[j];
+    //             nums[j] = nums[j +1];
+    //             nums[j + 1] = temp;
+    //         }
+    //     }
+    // }
 
+    *returnSize = 0;
+    if(numsSize < 3)
+    {
+        return NULL;
+    }
+
+    int cmp(const void* a, const void* b)
+    {
+        return *(int*)a - *(int*)b;
+    }
+    qsort(nums, numsSize, sizeof(int),  cmp);
+
+    int capacity = numsSize*numsSize;
+    int** result = (int**)malloc(sizeof(int*) * capacity);         // 定义一个 capacity*capacity的数组，里面存放指针。
+    *returnColumnSizes = (int*)malloc(sizeof(int*) * capacity);    // 
+
+    for(int i = 0; i < numsSize - 2; i++)
+    {
+        if(nums[i] > 0) break;
+        if(i > 0 && nums[i] == nums[i-1]) continue;
+
+        int letf = i + 1;
+        int right = numsSize - 1;
+        while(letf < right)
+        {
+            int sum = nums[i] + nums[letf] + nums[right]; // 注意溢出
+            if(sum == 0)
+            {
+                result[*returnSize] = (int*)malloc(sizeof(int)*3);
+                result[*returnSize][0] = nums[i];
+                result[*returnSize][1] = nums[letf];
+                result[*returnSize][2] = nums[right];
+
+                // 记录这一行的列数 (固定是3)
+                (*returnColumnSizes)[*returnSize] = 3;
+                
+                // 结果总数 +1
+                (*returnSize)++;
+
+                while(letf < right && nums[letf]  ==  nums[letf   + 1]) letf++;
+                while(letf < right && nums[right] ==  nums[right] - 1) right--;
+                letf++;
+                right--;
+            }
+            else if(sum < 0) 
+            {
+                letf++;
+            }
+            else 
+            {
+                right--;
+            }
+        }
+    }
+
+    return result;
+}
 ```
 
 **c++代码**
 
+```c++
+class Solution 
+{
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) 
+    {
+        int size = nums.size();
+        sort(nums.begin(), nums.end());
+        vector<vector<int>> ret;
+
+        if(size < 3)
+        {
+            return ret;
+        }
+
+        for(int i = 0; i < size - 2; ++i)
+        {
+            if(nums[i] > 0)
+            {
+                break;
+            }
+
+            if(i > 0 && nums[i] == nums[i - 1])
+            {
+                continue;
+            }
+
+            int left = i + 1;
+            int right = size - 1;
+            while(left < right)
+            {
+                int sum = nums[left] + nums[right] + nums[i];
+                if(sum > 0)
+                {
+                    right--;
+                }
+                else if(sum < 0) 
+                {
+                    left++;
+                }
+                else 
+                {
+                    ret.push_back({nums[i], nums[left], nums[right]});
+
+                    left++;
+                    right--;
+                    while(left < right && nums[left] == nums[left - 1])
+                    {
+                        left++;
+                    }
+
+                    while(left < right && nums[right] == nums[right + 1])
+                    {
+                        right--;
+                    }
+                }
+            }
+        }
+
+        return ret;
+    }
+/*
+        vector<vector<int>> ret;
+        int n = nums.size();
+
+        //1.排序
+        sort(nums.begin(), nums.end());
+
+        // 特殊情况，没有三个数直接返回的。
+        if(nums.size() < 3)
+        {
+            return ret;
+        }
+
+        // 2.固定第一个数
+        for(int i = 0; i < n - 2; ++i)
+        {   
+            // 最小的数大于零，直接退出
+            if(nums[i] > 0)
+            {
+                break;
+            } 
+
+            // 3.去重固定的第一个数，第一次不需要进程去重的。后面才需要的。
+            if(i > 0 && nums[i] == nums[i - 1])
+            {
+                continue;
+            }
+
+            // 1.双指针的left和right;
+            int left = i + 1;
+            int right = n - 1;
+
+            while(left < right)
+            {
+                int sum = nums[i] + nums[left] + nums[right];
+                if(sum > 0)
+                {
+                    right--;
+                }
+                else if(sum < 0)
+                {
+                    left++;
+                }
+                else 
+                {
+                    ret.push_back({nums[i], nums[left], nums[right]});
+                    // 1. 已经满足了，所以双指针都需要移动的
+                    left++;
+                    right--;
+
+                    // 2.开始去重了
+                    // 2.1去重的关键，left<right. 
+                    // 2.2 nums[left] == nums[left-1], 目前的数==前面的一个数
+                    while(left < right && nums[left] == nums[left-1])
+                    {
+                        left++;
+                    }
+                    while(left < right && nums[right] == nums[right + 1])
+                    {
+                        right--;
+                    }
+
+                    // 3.完成去重的时候。 nums[left]和nums[right]都不相等了的
+                }
+            }
+
+        }
+
+        return ret;
+*/
+
+        // vector<vector<int>> ret;
+        // // 1.排序
+        // sort(nums.begin(), nums.end());
+
+        // // 2.双指针算法
+        // int n = nums.size();
+        // for(int i = 0; i < n; ) // 固定第一个数
+        // {
+        //     if(nums[i] > 0) break; // 最小的i都大于零，直接退出就行了的
+
+        //     int target = -nums[i];
+        //     int left = i + 1;
+        //     int right = n - 1;
+
+        //     while(left < right)
+        //     {
+        //         int sum = nums[left] + nums[right];
+        //         if(sum > target)
+        //         {
+        //             right--;
+        //         }
+        //         else if(sum < target)
+        //         {
+        //             left++;
+        //         }
+        //         else 
+        //         {
+        //              ret.push_back({nums[i], nums[left], nums[right]});
+        //             left++;
+        //             right--;
+
+        //             // 去重的left和right;
+        //             while(left < right && nums[left] == nums[left-1])
+        //             {
+        //                 left++;
+        //             }
+        //             while(left < right && nums[right] == nums[right+1])
+        //             {
+        //                 right--;
+        //             }
+        //         }
+
+
+        //     }
+        //         // 去重right;
+        //         i++;
+        //         while(i < n && nums[i] == nums[i-1])
+        //         {
+        //             i++;
+        //         }
+
+          
+        // }
+        // return ret;
+
+
+
+
+        // vector<vector<int>> ret;
+        // int n = nums.size();
+        // sort(nums.begin(), nums.end());
+        // if (n < 3) return ret ;
+
+        // for(int i = 0; i < n - 2; i++)
+        // {
+        //     if(nums[i] > 0) break; // 已经是排序的了，最小的都大于零，其它的也大于零了。
+        //     int left = i + 1;
+        //     int right = n - 1;
+
+        //     if(i > 0 && nums[i] == nums[i-1]) continue; // 第一次不用重复，后面得才开始去重。num[i] num[i-1]判断已经走过的数字
+
+        //     while(left < right)
+        //     {
+        //         int sum = nums[i] + nums[left] + nums[right];
+        //         if(sum > 0)
+        //         {
+        //             right--;
+        //         }
+        //         else if(sum < 0)
+        //         {
+        //             left++;
+        //         }
+        //         else 
+        //         {
+        //             ret.push_back({nums[i], nums[left], nums[right]});
+        //             while(left < right && nums[left] == nums[left + 1]) left++;
+        //             while(left < right && nums[right] == nums[right - 1]) right--;
+        //             left++;
+        //             right--;
+        //         }
+        //     }
+        // }
+        // return ret;
+        //1.暴力解法，暴力枚举。
+        //2. 如何去重？
+
+        // 1.先排序，枚举，set去重
+
+        // 1.排序，双指针或者二分法，
+        // 找到一种结果之后，跳过重复的元素。 left right 和i
+        // 需要两个地方去重 
+        // vector<vector<int>> ret;
+        // int n = nums.size();
+        
+        // sort(nums.begin(), nums.end());
+        // for(int i = 0; i < n; )
+        // {
+        //     if(nums[i] > 0) break;
+        //     int left = i + 1;
+        //     int right = n - 1;
+        //     int target = -nums[i];
+
+        //     while(left < right)
+        //     {
+        //         int sum = nums[left] + nums[right];
+        //         if(sum > target)
+        //         { 
+        //             right--;
+        //         }
+        //         else if(sum < target) 
+        //         {
+        //             left++;
+        //         }
+        //         else 
+        //         {
+        //             ret.push_back({nums[i], nums[left], nums[right]});
+        //             left++;
+        //             right--;
+
+        //             while(left < right && nums[left] == nums[left-1]) 
+        //             {
+        //                 left++;
+        //             }
+        //             while(left < right && nums[right] == nums[right+1]) 
+        //             {
+        //                 right--;
+        //             }
+        //         }
+        //     }
+
+        //     i++;
+        //     while(i < n && nums[i] == nums[i-1]) i++;
+        // }
+        // return ret;
+
+    //     vector<vector<int>> ret;
+    //     int n = nums.size();
+    //     sort(nums.begin(), nums.end());
+
+    //     for(int i = 0; i < n - 2; i++)
+    //     {
+    //         if(nums[i] > 0) break;
+
+    //         if(i > 0 && nums[i] == nums[i-1]) continue; // 第一次外面的去重了
+
+    //         int left = i + 1;
+    //         int right = n - 1;
+    //         while(left < right)
+    //         {
+    //             int sum = nums[i] + nums[left] + nums[right];
+    //             if(sum ==  0)
+    //             {
+    //                 ret.push_back({nums[i], nums[left], nums[right]});
+    //                 while (left < right && nums[left] == nums[left + 1]) left++;
+    //                 while (left < right && nums[right] == nums[right - 1]) right--;
+                    
+    //                 left++;
+    //                 right--;
+    //             }
+    //             else if(sum <  0) 
+    //             {
+    //                 left++;
+    //             }
+    //             else 
+    //             {
+    //                 right--;
+    //             }
+    //         }
+    //     }
+    //     return ret;
+    // }
+};
 ```
 
+
+
+## 18.四数之和
+
+给你一个由 `n` 个整数组成的数组 `nums` ，和一个目标值 `target` 。请你找出并返回满足下述全部条件且**不重复**的四元组 `[nums[a], nums[b], nums[c], nums[d]]` （若两个四元组元素一一对应，则认为两个四元组重复）：
+
+- `0 <= a, b, c, d < n`
+- `a`、`b`、`c` 和 `d` **互不相同**
+- `nums[a] + nums[b] + nums[c] + nums[d] == target`
+
+你可以按 **任意顺序** 返回答案 。
+
+**示例 1：**
+
+```
+输入：nums = [1,0,-1,0,-2,2], target = 0
+输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
 ```
 
+**示例 2：**
 
+```
+输入：nums = [2,2,2,2,2], target = 8
+输出：[[2,2,2,2]]
+```
+
+**提示：**
+
+- `1 <= nums.length <= 200`
+- `-109 <= nums[i] <= 109`
+- `-109 <= target <= 109`
 
 **c代码**
 
-```
+```c
+#include <stdlib.h>
 
+static int cmpInt(const void* a, const void* b)
+{
+    int x = *(const int*)a;
+    int y = *(const int*)b;
+
+    if (x < y)
+    {
+        return -1;
+    }
+    if (x > y)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ *
+ * Both returned array and *returnColumnSizes must be malloced.
+ * The caller is responsible for freeing them.
+ */
+int** fourSum(int* nums,
+              int numsSize,
+              int target,
+              int* returnSize,
+              int** returnColumnSizes)
+{
+    *returnSize = 0;
+    *returnColumnSizes = NULL;
+
+    if (nums == NULL || numsSize < 4)
+    {
+        return NULL;
+    }
+
+    /* 双指针和去重的前提是数组有序 */
+    qsort(nums, numsSize, sizeof(int), cmpInt);
+
+    int capacity = 16;
+
+    int** result = (int**)malloc(sizeof(int*) * capacity);
+    *returnColumnSizes = (int*)malloc(sizeof(int) * capacity);
+
+    if (result == NULL || *returnColumnSizes == NULL)
+    {
+        free(result);
+        free(*returnColumnSizes);
+
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+
+    for (int i = 0; i < numsSize - 3; ++i)
+    {
+        /* i 去重 */
+        if (i > 0 && nums[i] == nums[i - 1])
+        {
+            continue;
+        }
+
+        /*
+         * 剪枝：
+         * 当前 i 对应的最小四数和已经大于 target，
+         * 后面的 nums[i] 更大，可以直接结束。
+         */
+        long long minSum =
+            (long long)nums[i] +
+            nums[i + 1] +
+            nums[i + 2] +
+            nums[i + 3];
+
+        if (minSum > target)
+        {
+            break;
+        }
+
+        /*
+         * 当前 i 对应的最大四数和仍然小于 target，
+         * 说明当前 i 太小，继续枚举下一个 i。
+         */
+        long long maxSum =
+            (long long)nums[i] +
+            nums[numsSize - 1] +
+            nums[numsSize - 2] +
+            nums[numsSize - 3];
+
+        if (maxSum < target)
+        {
+            continue;
+        }
+
+        for (int j = i + 1; j < numsSize - 2; ++j)
+        {
+            /* j 去重 */
+            if (j > i + 1 && nums[j] == nums[j - 1])
+            {
+                continue;
+            }
+
+            int left = j + 1;
+            int right = numsSize - 1;
+
+            while (left < right)
+            {
+                long long sum =
+                    (long long)nums[i] +
+                    nums[j] +
+                    nums[left] +
+                    nums[right];
+
+                if (sum == (long long)target)
+                {
+                    /*
+                     * 当前容量不够时扩容。
+                     */
+                    if (*returnSize == capacity)
+                    {
+                        int newCapacity = capacity * 2;
+
+                        int** newResult = (int**)realloc(
+                            result,
+                            sizeof(int*) * newCapacity);
+
+                        int* newColumnSizes = (int*)realloc(
+                            *returnColumnSizes,
+                            sizeof(int) * newCapacity);
+
+                        if (newResult == NULL || newColumnSizes == NULL)
+                        {
+                            /*
+                             * LeetCode 一般不要求处理分配失败。
+                             * 这里进行基本清理。
+                             */
+                            if (newResult != NULL)
+                            {
+                                result = newResult;
+                            }
+
+                            if (newColumnSizes != NULL)
+                            {
+                                *returnColumnSizes = newColumnSizes;
+                            }
+
+                            for (int k = 0; k < *returnSize; ++k)
+                            {
+                                free(result[k]);
+                            }
+
+                            free(result);
+                            free(*returnColumnSizes);
+
+                            *returnSize = 0;
+                            *returnColumnSizes = NULL;
+
+                            return NULL;
+                        }
+
+                        result = newResult;
+                        *returnColumnSizes = newColumnSizes;
+                        capacity = newCapacity;
+                    }
+
+                    int* row = (int*)malloc(sizeof(int) * 4);
+
+                    if (row == NULL)
+                    {
+                        for (int k = 0; k < *returnSize; ++k)
+                        {
+                            free(result[k]);
+                        }
+
+                        free(result);
+                        free(*returnColumnSizes);
+
+                        *returnSize = 0;
+                        *returnColumnSizes = NULL;
+
+                        return NULL;
+                    }
+
+                    row[0] = nums[i];
+                    row[1] = nums[j];
+                    row[2] = nums[left];
+                    row[3] = nums[right];
+
+                    result[*returnSize] = row;
+                    (*returnColumnSizes)[*returnSize] = 4;
+                    (*returnSize)++;
+
+                    left++;
+                    right--;
+
+                    /* left 去重 */
+                    while (left < right &&
+                           nums[left] == nums[left - 1])
+                    {
+                        left++;
+                    }
+
+                    /* right 去重 */
+                    while (left < right &&
+                           nums[right] == nums[right + 1])
+                    {
+                        right--;
+                    }
+                }
+                else if (sum < (long long)target)
+                {
+                    left++;
+                }
+                else
+                {
+                    right--;
+                }
+            }
+        }
+    }
+
+    /*
+     * 没有找到结果时，释放预先申请的空间。
+     */
+    if (*returnSize == 0)
+    {
+        free(result);
+        free(*returnColumnSizes);
+
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+
+    return result;
+}
 ```
 
 **c++代码**
 
-```
+```c++
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) 
+    {
+        vector<vector<int>> ret;
+        sort(nums.begin(), nums.end());
 
+        int n = nums.size();
+        if (n < 4) return ret;
+
+        for(int i = 0; i < n - 3; ++i)
+        {
+            // 1.跳过第一个数
+            if(i > 0 && nums[i] == nums[i-1])
+            {
+                continue;
+            }
+
+            for(int j = i + 1; j < n - 2; ++j)
+            {   
+                // 2.跳过第二个数。
+                if(j > i + 1 && nums[j] == nums[j-1])
+                {
+                    continue;
+                }
+
+                int left = j + 1;
+                int right = n - 1;
+                while(left < right)
+                {
+                    long long sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+                    if(sum == target)
+                    {
+                        ret.push_back({nums[i], nums[j], nums[left], nums[right]});
+                        left++;
+                        right--;
+
+                        while(left < right && nums[left] == nums[left-1]) left++;
+                        while(left < right && nums[right] == nums[right+1]) right--;
+                    }
+                    else if( sum > target)
+                    {
+                        right--;
+                    }
+                    else 
+                    {
+                        left++;
+                    }
+                }
+            }
+        }
+
+        return ret;
+
+        // vector<vector<int>> ret;
+        // sort(nums.begin(), nums.end());
+
+        // //1. a.固定一个数a, target;
+        // //2. a []三数之和等于 target-a;
+        // //3. a b[] 双指针等于 target - a - b;
+
+        // // 不重复，不漏
+        // // a b [left ...  right]
+
+        // int n = nums.size();
+        // if (n < 4) return ret;
+
+        // for(int i = 0; i < n - 3; i++) // 固定数a
+        // {
+        //     if(i > 0 && nums[i] == nums[i - 1]) continue;
+
+        //     for(int j = i + 1; j < n - 2; j++) // 固定数b;
+        //     {
+        //         if(j > i + 1 && nums[j] == nums[j - 1])  continue;
+
+        //         int left = j + 1;
+        //         int right = n - 1;
+
+        //         while(left < right)
+        //         {
+        //             long long sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+        //             if(sum == target)
+        //             {
+        //                 ret.push_back({nums[i], nums[j], nums[left], nums[right]});
+
+        //                 while(left < right && nums[left] == nums[left+1]) left++;
+        //                 while(left < right && nums[right] == nums[right-1]) right--;
+        //                 left++;
+        //                 right--;
+        //             }
+        //             else if(sum > target)
+        //             {
+        //                 right--;
+        //             }
+        //             else 
+        //             {
+        //                 left++;
+        //             }
+        //         }
+        //     }
+        // }
+        // return ret;
+    }
+};
 ```
 
 
