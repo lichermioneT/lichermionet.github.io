@@ -202,7 +202,8 @@ int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 ```
 
 ```c
-struct pollfd {
+struct pollfd 
+{
     int fd;
     short events;
     short revents;
@@ -255,8 +256,7 @@ int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 ### 7.2 注册、修改和删除
 
 ```c
-int epoll_ctl(int epfd, int op, int fd,
-              struct epoll_event *event);
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
 ```
 
 操作：
@@ -264,6 +264,16 @@ int epoll_ctl(int epfd, int op, int fd,
 - `EPOLL_CTL_ADD`；
 - `EPOLL_CTL_MOD`；
 - `EPOLL_CTL_DEL`。
+
+```c++
+struct epoll_event
+{
+    uint32_t events;   // 监听/发生的事件
+    epoll_data_t data; // 用户数据
+};
+```
+
+
 
 ### 7.3 等待事件
 
