@@ -449,9 +449,9 @@ lazyload:
 home_top:
   enable: true
   timemode: date
-  title: Lichermione 的技术栈
-  subTitle: C++ 后端、力扣刷题与前端实践
-  siteText: lichermionet.github.io
+  title: Lichermione blog
+  subTitle: 
+  siteText: 
   category:
     - name: C++
       path: /categories/cpp/
@@ -498,7 +498,7 @@ home_top:
     enable: false
   banner:
     tips: 持续更新
-    title: C++ 后端成长路线
+    title: 
     image: /img/default_cover.jpg
     link: /archives/
 
