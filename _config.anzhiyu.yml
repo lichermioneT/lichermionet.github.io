@@ -451,7 +451,7 @@ home_top:
   timemode: date
   title: Lichermione blog
   subTitle: 
-  siteText: 
+  siteText: 人生天地之间，若白驹之过隙，忽然而已。
   category:
     - name: C++
       path: /categories/cpp/
