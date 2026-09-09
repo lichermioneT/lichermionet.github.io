@@ -16,7 +16,62 @@ tags:
 
 本文系统整理`std::string`的构造、遍历、容量、修改、查找、截取、输入和C接口兼容方式，并通过一个教学版字符串类解释深拷贝、空字符、扩容和复制交换。
 
-<!-- more -->
+**构造函数**
+
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+// 1.构造函数
+void test1()
+{
+  string s;
+  const char* name = "lichermionexxx";
+  string s1(name);
+  string s2("lic");
+  string s3(3, 'z');
+  string s4(s1);
+  string s5(s2);
+  string s6("lichermionex", 0, 3);
+
+  cout<< "s" << s <<endl;
+  cout<< "s1:" << s1 <<endl;
+  cout<< "s2:" << s2 <<endl;
+  cout<< "s3:" << s3 <<endl;
+  cout<< "s4:" << s4 <<endl;
+  cout<< "s5:" << s5 <<endl;
+  cout<< "s6:" << s6 <<endl;
+
+}
+
+int main()
+{
+  test1();
+
+  return 0;
+}
+```
+
+**运行结果**
+
+```
+s
+s1:lichermionexxx
+s2:lic
+s3:zzz
+s4:lichermionexxx
+s5:lic
+s6:lic
+```
+
+**容量**
+
+
+
+
+
+
 
 ## 一、C风格字符串与std::string
 
