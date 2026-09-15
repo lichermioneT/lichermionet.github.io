@@ -66,8 +66,17 @@ Shell命令可能是：
 
 ```bash
 type cd
+cd is a shell builtin
+
 type ls
+ls is aliased to `ls --color=auto'
+
 command -v gcc
+/opt/rh/devtoolset-9/root/usr/bin/gcc
+
+type gcc
+gcc is /opt/rh/devtoolset-9/root/usr/bin/gcc
+
 which gcc
 ```
 

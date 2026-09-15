@@ -85,6 +85,27 @@ std::cout << "value = " << value << '\n';
 
 异常终止时缓冲数据不一定来得及写出，因此关键日志要设计适当刷新和持久化策略。
 
+```c
+#include <stdio.h>
+#include <unistd.h>
+
+int main()
+{
+  while(1)
+  {
+    printf("hello process");
+    // fflush(stdout);
+    sleep(1);
+  }
+
+  return 0;
+}
+```
+
+**缓冲区就是一块内存。**
+
+
+
 ## 四、C++流类体系概览
 
 常用头文件与类：
