@@ -1,135 +1,96 @@
 # Lichermione 的技术博客
 
-基于 Hexo 7 与 AnZhiYu 主题构建，发布地址为 <https://lichermionet.github.io>。
+基于项目现有的 Hexo 7.3.0 与 AnZhiYu 主题；本次修复不升级依赖版本。
 
-## 本地使用
+## 先打开哪一个文件？
 
-环境要求：Node.js 20.19 以上、低于 25。首次使用或 `package-lock.json` 更新后安装依赖：
+请先看 **使用说明_先看这里.md**。各分类的具体编号见 **文章排序清单.md**。
 
-```powershell
-cd D:\Desktop\lic
-npm ci
-```
+## Windows 使用
 
-本地预览：
+建议沿用 Node.js 24（项目范围为 >=20.19 <25，与原部署配置一致）。
 
-```powershell
+- `1_INSTALL_AND_CHECK.cmd`：检查/安装依赖，构建并检查站点。
+- `2_PREVIEW.cmd`：检查/安装依赖，构建检查后启动本地预览。
+
+先把压缩包完整解压，不要在压缩软件内部直接运行脚本。已有仓库时，把源码包里的文件合并覆盖到原仓库，保留原来的 `.git` 和 `node_modules`。
+
+命令行方式，在有 `package.json` 的项目根目录执行：
+
+```bash
+npm run setup
+npm run validate
 npm run dev
 ```
 
-浏览器打开 <http://localhost:4000>。提交前运行完整检查：
+浏览器访问 `http://localhost:4000`，按 Ctrl+C 停止预览。
 
-```powershell
-npm run validate
-```
+## 文章排序
 
-## 写一篇新博客
-
-推荐先写草稿：
-
-```powershell
-npx hexo new draft "文章标题"
-npm run draft
-```
-
-草稿位于 `source\_drafts\文章标题.md`。完成后发布为正式文章：
-
-```powershell
-npm run publish -- "文章标题"
-```
-
-也可以直接创建正式文章：
-
-```powershell
-npm run new -- "文章标题"
-```
-
-每篇文章的开头使用以下信息：
+首页主文章列表按日期从新到旧；分类页、专栏页按 `order` 从小到大。文章底部的上一篇/下一篇也按同一分类的章节顺序，不跨分类跳转。
 
 ```yaml
 ---
 title: 文章标题
-date: 2026-07-29 20:00:00
-updated: 2026-07-29 20:00:00
-description: 用一句话概括文章内容
+date: 2026-09-28 10:00:00
 categories:
   - Linux
+order: 16
 tags:
   - Linux
-  - 进程
 comments: false
 ---
+
+正文……
 ```
 
-## 添加文章图片
+不同分类可以重复编号；同一分类不要重复。只调整位置时修改 `order`，不要改日期或文件名。未填写或无效的编号排在已编号文章后面；并列时按日期、标题排序。
 
-项目已经启用文章资源文件夹。创建文章后，会同时出现同名目录：
+## 新文章与草稿
 
-```text
-source\_posts\
-├── 文章标题.md
-└── 文章标题\
-    └── example.png
+```bash
+npm run new -- draft "新文章标题"
+npm run draft
+npm run publish -- "新文章标题"
 ```
 
-在 Markdown 中引用：
+正式文章位于 `source/_posts/`，草稿位于 `source/_drafts/`。新文章模板已添加 `order` 提醒。
 
-```markdown
-![图片说明](example.png)
-```
+## 检查与发布
 
-不要引用电脑上的绝对路径，也不要把图片只放在 `public\`；`public\` 每次构建都会重新生成。
-
-## 以后如何上传并发布
-
-日常发布只需要：
-
-```powershell
+```bash
 npm run validate
-git pull --ff-only
+git status
 git add -A
 git diff --cached
-git commit -m "post: 新增文章标题"
+git commit -m "fix: 完善博客文章排序与本地预览"
 git push
 ```
 
-推送后，GitHub Actions 会自动安装依赖、构建、检查并发布。可在仓库的 **Actions** 页面查看进度；成功后打开博客并强制刷新一次。
+先确认暂存内容是准备发布的修改，再提交。脚本不会自动提交、推送或修改线上博客。已有仓库不需要重新 `git init`，不要强制推送。
 
-不要提交 `node_modules\`、`public\`、`db.json` 或 `.deploy_git\`，也不要再使用旧的 `hexo deploy`。
-
-## 第一次迁移到自动发布
-
-当前本地目录还没有源码 Git 历史，而远端 `lichermioneT.github.io` 的 `main` 保存的是旧的生成页面。第一次迁移只做一次：
-
-1. 在 GitHub 仓库页面，从当前 `main` 创建备份分支，例如 `pages-static-backup-20260729`。
-2. 打开仓库 **Settings → Pages**，把 **Source** 改为 **GitHub Actions**。
-3. 在本目录初始化源码仓库：
-
-   ```powershell
-   cd D:\Desktop\lic
-   git init
-   git branch -M main
-   git add -A
-   git commit -m "chore: migrate Hexo source"
-   git remote add origin git@github.com:lichermioneT/lichermioneT.github.io.git
-   git fetch origin main
-   git push --force-with-lease -u origin main
-   ```
-
-4. 到 GitHub 的 **Actions** 页面确认 `Deploy Hexo to GitHub Pages` 成功。
-
-首次 push 需要改写旧的静态页面分支，因此必须先完成第 1 步备份；以后都使用普通 `git push`，不再强制推送。
+原 `.github/workflows/pages.yml` 保留：推送到 `main` 后触发构建与 Pages 部署；是否成功以 Actions 结果为准。
 
 ## 常用命令
 
 | 命令 | 用途 |
 | --- | --- |
-| `npm run dev` | 预览正式文章 |
-| `npm run draft` | 连草稿一起预览 |
-| `npm run build` | 清理并生成 `public\` |
-| `npm run check` | 检查坏内部链接和示例配置 |
-| `npm run validate` | 构建后执行完整检查 |
+| `npm run setup` | 检查已有依赖；缺失或锁文件变化时安装 |
+| `npm run setup -- --reinstall` | 根据锁文件重新安装依赖，不修改正文 |
+| `npm run validate` | 构建、内部链接检查、真实 HTML 排序检查 |
+| `npm run check:order` | 检查已有 public 页面中的列表与章节导航 |
+| `npm run test:order` | 编号边界与 Warehouse 实际查询回归测试 |
+| `npm run dev` | 启动正式文章预览 |
+| `npm run draft` | 预览时包括草稿 |
 
-## 当前待补资源
+## 技术说明
 
-`Linux进程概念.md` 原本引用的 20 张图片没有随仓库迁移。源码中已用“待补原图”注释保留文件名，当前页面不会再显示坏图；找到原图后放入 `source\_posts\Linux进程概念\picture\`，再恢复对应引用即可。
+旧脚本只给某一次查询返回的文章对象赋值，分类页重新查询文章时读不到该值。现在给 Hexo 的 Post 模型注册 `manual_order` 虚拟 getter，每次查询都从原始 `order` 得到同一个数值，不改 Markdown 日期。
+
+`tools/run-hexo.cjs` 直接调用项目内的 Hexo CLI，不依赖全局 Hexo 或 `.bin` 启动文件，并在读取文章前使用 `_config.yml` 的时区，避免纯日期字段在不同系统构建时偏移一天。
+
+`public/post-order-manifest.json` 是构建生成的检查数据，不要手动编辑。`npm run validate` 会把这个数据与实际生成的 HTML 对照，包括第二页及后续分页。
+
+图片仍可放在文章同名资源目录。不要引用电脑绝对路径或不存在的文件。原文中缺失图片的既有注释保留，本次没有编造或补绘图片。
+
+不要提交 `node_modules/`、`public/`、`db.json` 或 `.cache/`，这些仍由 `.gitignore` 忽略。

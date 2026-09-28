@@ -1,0 +1,31 @@
+﻿博客排序修复检查记录
+检查日期：2026-09-28
+输入文件：lichermionet.github.io(2).zip
+测试环境：Linux，Node.js 22.16.0，npm 10.9.2；使用上传包中的既有依赖。
+
+一、实际执行通过
+1. npm run setup：识别并复用与 package-lock.json 一致的现有依赖。
+2. npm run test:order：22 个测试通过，0 个失败。
+   包含有效/无效编号边界、真实 Warehouse 模型重新查询与编号修改回归测试。
+3. npm run validate：完整 clean + generate 构建、内部链接检查、排序检查均通过。
+   生成 526 个文件。
+   487 个 HTML 页面未发现坏内部链接或示例 SEO 内容。
+   95 篇文章、31 个列表页面（包括第二页及后续分页）、95 篇文章导航全部通过排序检查。
+4. 本地 Hexo 预览服务器成功启动。通过 HTTP 实际读取并检查 C++ 分类第一页、第二页和 C 语言专栏。
+5. 实时更新测试：暂时将 C++ 第一篇的 order 从 1 改成 30，HTTP 页面顺序相应改变；恢复为 1 后页面顺序恢复。最终打包的源码已还原。
+6. 逐篇与上传 ZIP 对照：95 篇 Markdown 的正文原始字节、标题、日期、其他既有 Front-matter 值及文件名均保持不变，仅补齐缺失的 order。
+7. 上传包 public 中的 95 个文章地址仍可访问对应页面或兼容跳转；C 语言概念文章的旧地址已补兼容跳转。
+8. package-lock.json 和依赖版本未修改；原有 GitHub Actions 工作流未修改。
+
+二、说明及限制
+1. 本次未操作线上 GitHub 仓库，没有提交、推送或部署。
+2. Windows .cmd 按 Windows 语法、CRLF 换行、带引号目录切换和错误退出编写，未在 Windows 原生系统双击实测。
+3. 全新 npm ci 联网安装尝试遇到 registry.npmjs.org 域名解析 EAI_AGAIN，因此没有验证全新联网安装的成功分支；已有依赖的复用及整站构建路径已实测通过。
+4. 浏览器自动化被当前环境的浏览器访问策略阻止，未完成视觉截图或手机 UI 实测。预览成功的结论来自本地 HTTP 请求和返回 HTML 的内容校验，不是浏览器视觉验收。
+5. 内部链接检查不验证第三方 CDN、外部链接或 GitHub Pages 线上可用性。
+
+三、交付包
+完整源码包不包含 .git、node_modules、public、db.json 和 .cache。
+把解压目录里的文件合并覆盖到原项目，保留原 .git 和 node_modules。
+双击 2_PREVIEW.cmd 检查并启动预览；仅检查时双击 1_INSTALL_AND_CHECK.cmd。
+详细操作见 使用说明_先看这里.md。

@@ -9,6 +9,7 @@ tags:
   - Connector/C
   - libmysqlclient
   - Prepared Statement
+order: 14
 ---
 
 MySQL C API 通过 `libmysqlclient` 提供对客户端/服务器协议的底层访问。完整流程包括初始化、配置连接、执行 SQL、区分结果集与受影响行数、释放资源和关闭连接。业务代码还必须解决凭据、超时、字符集、SQL 注入和断线处理问题。

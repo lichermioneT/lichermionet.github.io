@@ -19,5 +19,5 @@ block content
           i.anzhiyufont.anzhiyu-icon-angle-double-right
         a.catalog-more(href="/categories/")!= '更多'
       .article-sort-title= _p('page.category') + ' - ' + page.category
-      +articleSort(page.posts, page.current)
+      +articleSort(page.posts, page.current, true)
       include includes/pagination.pug

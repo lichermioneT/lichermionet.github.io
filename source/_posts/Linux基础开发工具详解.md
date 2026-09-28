@@ -11,6 +11,7 @@ tags:
   - Makefile
   - Git
   - yum
+order: 3
 ---
 
 Linux开发工具链不是若干彼此无关的命令：包管理器负责安装工具，Vim完成编辑，GCC把源代码变成程序，GDB观察运行状态，Make根据依赖关系组织构建，Git记录并协作代码变更。

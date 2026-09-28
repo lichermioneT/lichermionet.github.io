@@ -4,6 +4,7 @@ date: 2026-08-22
 categories: C 语言
 tags: [C语言, 函数指针, 回调函数, qsort]
 description: 理解回调函数的设计思想，掌握qsort的比较函数和通用排序实现原理。
+order: 14
 ---
 
 # 深入理解C语言指针（四）：回调函数与qsort

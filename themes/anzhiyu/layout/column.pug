@@ -9,8 +9,10 @@ block content
     h1= page.title
     if page.description
       p.column-description= page.description
+    if page.content
+      #article-container.column-intro!= page.content
     if columnPosts && columnPosts.length
-      +articleSort(columnPosts, 1)
+      +articleSort(columnPosts, 1, true)
     else
       .column-empty
         p 该专栏正在整理中，文章发布后会自动显示在这里。

@@ -4,6 +4,7 @@ date: 2026-08-22
 categories: C 语言
 tags: [C语言, Visual Studio, 调试, Debug]
 description: 掌握断点、单步执行、监视窗口、内存窗口及常见错误定位方法。
+order: 8
 ---
 
 # Visual Studio调试C语言程序的实用技巧

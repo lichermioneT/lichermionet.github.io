@@ -4,6 +4,7 @@ date: 2026-08-22
 categories: C 语言
 tags: [C语言, 指针, sizeof, strlen]
 description: 对比sizeof与strlen，并建立分析数组、指针和复杂表达式的统一方法。
+order: 15
 ---
 
 # 深入理解C语言指针（五）：sizeof、strlen与指针题解析

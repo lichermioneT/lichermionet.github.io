@@ -9,6 +9,7 @@ tags:
   - TCP
   - UDP
   - 网络编程
+order: 11
 ---
 
 Socket 是应用程序使用网络协议栈的主要接口。Linux 把套接字抽象为文件描述符，因此可以使用 `read`、`write`、`close`，也可以使用更适合网络语义的 `recv`、`send`、`recvfrom` 和 `sendto`。

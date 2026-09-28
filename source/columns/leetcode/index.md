@@ -1,7 +1,8 @@
 ---
 title: LeetCode
 date: 2026-08-18 17:07:00
-type: page
+layout: column
+column: 力扣
 comments: false
 ---
 

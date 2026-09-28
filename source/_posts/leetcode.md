@@ -5,6 +5,7 @@ categories:
   - 力扣
 type: page
 comments: false
+order: 1
 ---
 
 可以，这一题你的整体思路是对的，但有一句需要改得更严谨：

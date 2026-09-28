@@ -7,6 +7,7 @@ tags:
   - 二分
 type: page
 comments: false
+order: 4
 ---
 
 ## 704.二分查找

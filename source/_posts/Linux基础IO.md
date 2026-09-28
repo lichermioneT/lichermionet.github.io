@@ -13,6 +13,7 @@ tags:
   - 文件系统
   - 动静态库
 comments: false
+order: 6
 ---
 
 Linux 的 I/O 学习可以沿着一条清晰的路径展开：

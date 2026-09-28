@@ -9,6 +9,7 @@ tags:
   - sigaction
   - sigprocmask
   - SIGCHLD
+order: 8
 ---
 
 Linux 信号是一种异步事件通知机制。内核、终端或其他进程可以向目标进程发送信号，目标进程再按照默认动作、忽略规则或自定义处理器作出响应。

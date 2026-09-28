@@ -7,8 +7,10 @@
   }
 
 if is_post()
+  - const chapterNav = ordered_post_navigation(page)
   - let prev = theme.post_pagination === 1 || theme.post_pagination === 3 || theme.post_pagination === 4 ? page.prev : page.next
   - let next = theme.post_pagination === 1 || theme.post_pagination === 3 || theme.post_pagination === 4 ? page.next : page.prev
+  - if (chapterNav) { prev = chapterNav.prev; next = chapterNav.next }
   nav#pagination.pagination-post
     if(prev)
       - var hasPageNext = next ? 'pull-left' : 'pull-full'

@@ -10,6 +10,7 @@ tags:
   - 运算符
   - scanf
   - printf
+order: 2
 ---
 
 ## 前言

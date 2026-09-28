@@ -4,15 +4,19 @@
   "description": "Lichermione 的 Hexo 技术博客",
   "private": true,
   "scripts": {
-    "clean": "hexo clean",
-    "build": "hexo clean && hexo generate",
-    "check": "node tools/check-site.mjs",
+    "clean": "node tools/run-hexo.cjs clean",
+    "build": "node tools/run-hexo.cjs clean && node tools/run-hexo.cjs generate",
+    "check": "node tools/check-site.mjs && npm run check:order",
     "validate": "npm run build && npm run check",
-    "dev": "hexo server",
-    "draft": "hexo server --draft",
-    "new": "hexo new",
-    "publish": "hexo publish",
-    "server": "hexo server"
+    "dev": "node tools/run-hexo.cjs server",
+    "draft": "node tools/run-hexo.cjs server --draft",
+    "new": "node tools/run-hexo.cjs new",
+    "publish": "node tools/run-hexo.cjs publish",
+    "server": "node tools/run-hexo.cjs server",
+    "setup": "node tools/setup.cjs",
+    "check:order": "node tools/check-order.mjs",
+    "prebuild": "node tools/check-env.cjs",
+    "test:order": "node --test tools/post-order.test.cjs"
   },
   "hexo": {
     "version": "7.3.0"
