@@ -3,7 +3,8 @@ extends includes/layout.pug
 block content
   include includes/mixins/article-sort.pug
   - const currentCategory = site.categories.findOne({ name: page.column })
-  - const columnPosts = currentCategory ? currentCategory.posts.sort('-date') : null
+  - const columnOrder = { manual_order: 1, date: 1, title: 1 }
+  - const columnPosts = currentCategory ? currentCategory.posts.sort(columnOrder) : null
   #page.column-landing
     h1= page.title
     if page.description

@@ -97,3 +97,11 @@ feed:
   limit: 20 
   content: true 
 root:
+
+# 分类页：按文章编号排序
+category_generator:
+  per_page: 10
+  order_by:
+    manual_order: 1
+    date: 1
+    title: 1
