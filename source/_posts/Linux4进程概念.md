@@ -244,7 +244,43 @@ echo $$
 ps -ef
 ps -eo pid,ppid,stat,pri,ni,comm
 pstree -p
+
+ps 
+ps -ef  // process status  every process  full format / full-format listing
+ps aux  // process status  all   user-oriented  no controlling terminal
+
 ```
+
+**ps -ef**
+
+```
+UID   用户
+PID   当前进程ID
+PPID  父进程ID
+C     CPU使用情况
+STIME 启动时间
+TTY   终端
+TIME  CPU累计时间
+CMD   完整启动命令
+```
+
+
+
+**ps aux**
+
+```
+USER   PID %CPU %MEM    VSZ   RSS TTY STAT START TIME COMMAND
+lic   3256  2.1  1.3 200000 30000 ?   Sl   14:20 0:03 ./server
+
+%CPU    CPU占用率
+%MEM    内存占用率
+VSZ     虚拟内存大小
+RSS     实际占用物理内存
+STAT    进程状态
+COMMAND 启动命令
+```
+
+
 
 **Linux 的 `/proc` 是一个虚拟文件系统，可以通过 `/proc/<PID>/` 查看进程信息：**
 
