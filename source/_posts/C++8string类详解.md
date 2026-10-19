@@ -27,14 +27,14 @@ using namespace std;
 // 1.构造函数
 void test1()
 {
-  string s;
+  string s;   // 空对象
   const char* name = "lichermionexxx";
-  string s1(name);
-  string s2("lic");
-  string s3(3, 'z');
-  string s4(s1);
-  string s5(s2);
-  string s6("lichermionex", 0, 3);
+  string s1(name);   // 常量指针构造
+  string s2("lic");  // 常量指针构造
+  string s3(3, 'z'); // 3个z
+  string s4(s1);     // 拷贝构造
+  string s5 = s2;    // 拷贝构造 
+  string s6("lichermionex", 0, 3); // 起始位置 + 步长
 
   cout<< "s" << s <<endl;
   cout<< "s1:" << s1 <<endl;
@@ -43,7 +43,6 @@ void test1()
   cout<< "s4:" << s4 <<endl;
   cout<< "s5:" << s5 <<endl;
   cout<< "s6:" << s6 <<endl;
-
 }
 
 int main()
@@ -57,7 +56,7 @@ int main()
 **运行结果**
 
 ```
-s
+s0:
 s1:lichermionexxx
 s2:lic
 s3:zzz
@@ -67,8 +66,6 @@ s6:lic
 ```
 
 **容量**
-
-
 
 
 
