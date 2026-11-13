@@ -97,9 +97,9 @@ avatar:
   img: /img/avatar.jpg
   effect: false
 
-# 顶部视觉：使用纯 CSS 渐变，不依赖外部图床。
+# 首页使用深色背景，其余页面保留默认渐变。
 disable_top_img: false
-index_img: "background: linear-gradient(135deg, #081426 0%, #123f75 48%, #0e7490 100%)"
+index_img: "background: #18171d"
 default_top_img: "background: linear-gradient(135deg, #081426 0%, #123f75 48%, #0e7490 100%)"
 
 # 文章封面

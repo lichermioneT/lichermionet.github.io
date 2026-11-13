@@ -23,6 +23,66 @@
   --lic-border: rgba(103, 232, 249, 0.14);
 }
 
+/* 首页星空在标题后独立裁切，导航和下拉菜单仍可超出横幅。 */
+.home-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-stars > i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #e2e18e;
+  animation: home-star-drift linear infinite;
+}
+
+.home-stars > i:nth-child(3n) {
+  width: 1px;
+  height: 1px;
+}
+
+.home-stars > i:nth-child(13n) {
+  width: 3px;
+  height: 3px;
+  background: #b4b8f0;
+}
+
+@keyframes home-star-drift {
+  0% { opacity: 0; transform: translate(0, 0); }
+  35%, 65% { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(98px, -54px); }
+}
+
+.home-meteor {
+  position: absolute;
+  left: 65%;
+  top: 60%;
+  width: 34px;
+  height: 2px;
+  border-radius: 50%;
+  background: linear-gradient(to right, transparent, #e2e1e0);
+  animation: home-meteor-drift 8s linear infinite;
+  animation-delay: -6s;
+}
+
+@keyframes home-meteor-drift {
+  0%, 85% { opacity: 0; transform: rotate(-30deg); }
+  88% { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(210px, -121px) rotate(-30deg); }
+}
+
+@media (max-width: 768px) {
+  .home-stars > i:nth-child(n+43) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-stars { display: none; }
+}
+
 /* 导航：轻量磨砂，滚动时仍保持清晰。 */
 #page-header.nav-fixed #nav,
 #page-header.not-top-img #nav {
