@@ -504,7 +504,7 @@ home_top:
 
 # 视觉效果和附加功能
 universe:
-  enable: false
+  enable: true
 bubble:
   enable: false
 console:

@@ -43,7 +43,6 @@ header#page-header(class=`${isHomeClass}` style=home_index_img_bg)
           img#post-top-bg(class='nolazyload' src=bg_img)
 
     else if is_home()
-      include ./home-stars.pug
       #site-info
         h1#site-title=site_title
         if theme.subtitle.enable

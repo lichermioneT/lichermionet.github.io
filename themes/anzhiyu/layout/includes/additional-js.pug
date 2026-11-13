@@ -25,10 +25,10 @@ div
     script.
       var meting_api = "!{theme.asset.meting_api}";
 
-  //- 深色模式粒子效果canvas
+  //- 位于 PJAX 替换区域之外，切换页面时保留同一片星空。
   if theme.universe.enable
-    canvas(id="universe")
-    script(async src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/dark/dark.js")
+    canvas#universe(aria-hidden="true")
+    script(defer src=url_for('js/anzhiyu/universe.js'))
 
   //- 控制台打印信息
   if theme.console.enable
