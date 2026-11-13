@@ -8,16 +8,22 @@ if home_top_config.enable
           if theme.peoplecanvas.enable
             canvas#peoplecanvas
           else 
+            .sky-dial(aria-hidden="true")
+              .dial-orbit
+              .dial-equator
+              .dial-meridian
+              .dial-star
             .banners-title
-              .banners-title-big=title
-              .banners-title-big=subTitle
-              .banners-title-small=siteText
+              .journal-title
+                span=title
+                if subTitle
+                  em=subTitle
+              .journal-quote=siteText
             include ../anzhiyu/tags-group-all.pug
 
-          a#random-hover(href='javascript:toRandomPost()')
-            i.anzhiyufont.anzhiyu-icon-paper-plane
-            .bannerText 随便逛逛
-              i.anzhiyufont.anzhiyu-icon-arrow-right
+          a.journal-random(href='javascript:toRandomPost()')
+            span 随便逛逛
+            span.journal-arrow(aria-hidden="true") ↗
         .categoryGroup
           each item in home_top_config.category
             .categoryItem(style=`box-shadow:${item.shadow}`)
@@ -83,15 +89,16 @@ if home_top_config.enable
                   img.post_bg(onerror=`this.onerror=null;this.src='${url_for(theme.error_img.post_page)}'`, alt='cover',  src=item.cover)
               .recent-post-info
                 a.article-title(href=item.path, title=item.title)=item.title
-          a#todayCard.todayCard(href=top_group_banner_link, style='z-index: 1;')
-            .todayCard-info
-              .todayCard-tips=top_group_banner_tips
-              .todayCard-title=top_group_banner_title
-            img.todayCard-cover(src=url_for(top_group_banner_image) onerror=`this.onerror=null;this.src='${url_for(theme.error_img.post_page)}'` alt='封面')
+          #todayCard.todayCard
+            a.archive-link(href=top_group_banner_link)
+              img.todayCard-cover.nolazyload(src=url_for(top_group_banner_image) onerror=`this.onerror=null;this.src='${url_for(theme.error_img.post_page)}'` alt='')
+              .todayCard-info
+                .todayCard-tips=top_group_banner_tips
+                .todayCard-title=top_group_banner_title
             .banner-button-group
-              .banner-button(onclick='event.stopPropagation();event.preventDefault();anzhiyu.hideTodayCard();')
-                i.anzhiyufont.anzhiyu-icon-arrow-circle-right
+              button.banner-button(type='button' onclick='anzhiyu.hideTodayCard()')
                 span.banner-button-text 更多推荐
+                span(aria-hidden="true") →
         
         link(rel="stylesheet", href=theme.home_top.banner.top_group_banner_css)
       

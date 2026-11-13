@@ -75,6 +75,201 @@
   overflow: hidden;
 }
 
+/* 两张首页封面沿用主题的桌面尺寸和小屏切换方式。 */
+#home_top #random-banner,
+#home_top #todayCard {
+  border: 1px solid #72796c;
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+#home_top #random-banner {
+  --cover-inset: clamp(26px, 2.6vw, 42px);
+  background: radial-gradient(ellipse at 90% 65%, #336364, transparent 62%),
+    linear-gradient(115deg, #112d36, #18434a 70%, #254e50);
+  color: #fff2d4;
+}
+
+#random-banner .banners-title {
+  top: 19%;
+  left: var(--cover-inset);
+  right: var(--cover-inset);
+  z-index: 1;
+}
+
+.journal-title {
+  font: 500 clamp(40px, 3.15vw, 54px)/1.08 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.045em;
+}
+
+.journal-title em {
+  margin-left: 0.18em;
+  color: #e6c282;
+}
+
+.journal-quote {
+  margin-top: 14px;
+  color: #e2e8da;
+  font: 15px/1.7 "Songti SC", SimSun, serif;
+  letter-spacing: 0.045em;
+}
+
+#random-banner .journal-random {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 0 var(--cover-inset) 24px;
+  color: #fae3b5;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 27px;
+}
+
+.journal-arrow {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid #b7ad89;
+  border-radius: 50%;
+  transition: background .2s, color .2s;
+}
+
+.journal-random:is(:hover, :focus-visible) .journal-arrow {
+  background: #f1d59b;
+  color: #173c41;
+}
+
+/* 黄铜星盘由刻度、经纬圈和中央指针构成。 */
+.sky-dial {
+  position: absolute;
+  width: clamp(196px, 16vw, 270px);
+  aspect-ratio: 1;
+  right: -4%;
+  top: 53%;
+  border: 1px solid #c9b88899;
+  border-radius: 50%;
+  color: #f3d496;
+  transform: translateY(-50%) rotate(-23deg);
+  transition: transform .6s ease;
+  pointer-events: none;
+}
+
+#random-banner:hover .sky-dial {
+  transform: translateY(-50%) rotate(-17deg);
+}
+
+.sky-dial::before,
+.sky-dial::after,
+.sky-dial > div {
+  position: absolute;
+}
+
+.sky-dial::before {
+  content: "";
+  inset: 3px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(currentColor 0deg .6deg, transparent .6deg 6deg);
+  mask-image: radial-gradient(closest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  opacity: .8;
+}
+
+.sky-dial::after {
+  content: "";
+  inset: 9%;
+  border: 1px solid #cfbb8380;
+  border-radius: 50%;
+}
+
+.sky-dial .dial-orbit,
+.sky-dial .dial-equator,
+.sky-dial .dial-meridian {
+  border: 1px solid #cfbb8390;
+  border-radius: 50%;
+}
+
+.dial-orbit { inset: 25% -8%; transform: rotate(-18deg); }
+.dial-equator { inset: 35% 9%; }
+.dial-meridian { inset: 9% 33%; }
+
+.dial-star {
+  inset: 35%;
+  background: #f0cf8c;
+  clip-path: polygon(50% 0, 56% 41%, 88% 12%, 61% 44%, 100% 50%, 61% 56%, 88% 88%, 56% 59%, 50% 100%, 44% 59%, 12% 88%, 39% 56%, 0 50%, 39% 44%, 12% 12%, 44% 41%);
+}
+
+#home_top #todayCard {
+  background: #14273b;
+  border-color: #636b72;
+}
+
+#todayCard .archive-link {
+  position: absolute;
+  inset: 0;
+}
+
+#todayCard .todayCard-cover {
+  width: 100%;
+  height: 100%;
+  filter: none;
+  transition: transform .5s ease;
+}
+
+#todayCard:hover .todayCard-cover { transform: scale(1.025); }
+#todayCard::after { display: none; }
+
+#todayCard .archive-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #08151ee6, transparent 45%);
+  pointer-events: none;
+}
+
+#todayCard .todayCard-info {
+  left: 28px;
+  bottom: 24px;
+}
+
+#todayCard .todayCard-tips {
+  color: #f3d79a;
+  font-size: 13px;
+  letter-spacing: .14em;
+  opacity: 1;
+}
+
+#todayCard .todayCard-title {
+  margin-top: 5px;
+  color: #fff2db;
+  font: 600 30px/1.2 "Songti SC", SimSun, serif;
+  letter-spacing: .05em;
+}
+
+#todayCard .banner-button-group { right: 24px; bottom: 26px; }
+
+#todayCard .banner-button {
+  gap: 10px;
+  height: 38px;
+  width: auto;
+  padding: 0 16px;
+  border: 1px solid #cfba8f9c;
+  background: #10212bc9;
+  color: #fff0d1;
+  font-size: 14px;
+}
+
+#todayCard .banner-button:is(:hover, :focus-visible) {
+  background: #efdbb0;
+  color: #182b32;
+}
+
+#todayCard.hide { visibility: hidden; }
+#todayCard .archive-link:focus-visible,
+#random-banner .journal-random:focus-visible { outline-offset: -5px; }
+
 .categoryItem {
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: var(--lic-radius-md);
