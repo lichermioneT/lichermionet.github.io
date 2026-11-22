@@ -251,6 +251,44 @@ int main()
 }
 ```
 
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main()
+{
+	string s = "hello world";
+
+	// 从下标 5 开始，删除 6 个字符
+	s.erase(5, 6);
+
+	cout << s << endl; // hello
+
+	string s1 = "abcdef";
+
+	s1.erase(3);
+
+	cout << s1 << endl; // abc
+
+	string s2 = "abcdef";
+
+	// 删除下标 2 对应的字符 'c'
+	s2.erase(s2.begin() + 2);
+
+	cout << s2 << endl; // abdef
+
+	string s3 = "abcdef";
+
+	// 删除下标 [1, 4) 的字符
+	s3.erase(s3.begin() + 1, s3.begin() + 4);
+
+	cout << s3 << endl; // aef
+	return 0;
+
+}
+```
+
 
 
 
