@@ -266,6 +266,10 @@ int main()
 #include <string>
 using namespace std;
 
+string& insert(size_t pos, char ch); // 自定义便捷接口
+string& insert(size_t pos, const char* str);
+string& erase(size_t pos, size_t len = npos);
+
 int main()
 {
 	string s = "hello world";
@@ -686,12 +690,35 @@ namespace lic
 			return *this;
 		}
 
-		bool operator==(const string& str) const;
-		bool operator!=(const string& str) const;
-		bool operator>(const string& str) const;
-		bool operator>=(const string& str) const;
-		bool operator<(const string& str) const;
-		bool operator<=(const string& str) const;
+		bool operator==(const string& str) const
+        {
+            return strcmp(_str, str._str) == 0;
+        }
+
+        bool operator!=(const string& str) const
+        {
+            return !(*this == str);
+        }
+
+        bool operator<(const string& str) const
+        {
+            return strcmp(_str, str._str) < 0;
+        }
+
+        bool operator>(const string& str) const
+        {
+            return str < *this;
+        }
+
+        bool operator<=(const string& str) const
+        {
+            return !(*this > str);
+        }
+
+        bool operator>=(const string& str) const
+        {
+            return !(*this < str);
+        }
 
 	public:
 		static size_t npos;
