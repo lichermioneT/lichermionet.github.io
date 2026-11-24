@@ -20,52 +20,53 @@ order: 9
 ```c++
 #include <iostream>
 #include <vector>
-using std::cout;
-using std::endl;
-using std::ostream;
-using std::istream;
-using std::vector;
+using namespace std;
 
-int main()
+void print(const vector<int> v)
 {
-	vector<int> v(10, 1);
-	vector<int> v1{ 1,2,3,4,5,6 };
-	vector<int> v2(v1);
-	
 	for (auto e : v)
 	{
 		cout << e << " ";
 	}
 	cout << endl;
+}
 
-	for (auto e : v1)
-	{
-		cout << e << " ";
-	}	
-	cout << endl;
+int main()
+{
+	vector<int> v(10, 1);          // 10个1
+	vector<int> v1{ 1,2,3,4,5,6 }; // 初始化
+	vector<int> v2(v1);            // 拷贝构造
 
-	for (auto e : v2)
-	{
-		cout << e << " ";
-	}
-	cout << endl;
+	print(v);
+	print(v1);
+	print(v2);
+
 	return 0;
 }
 ```
 
+**输出**
+
+```
+1 1 1 1 1 1 1 1 1 1
+1 2 3 4 5 6
+1 2 3 4 5 6
+```
+
+
+
 ## 1.2迭代器
+
+**vector的随机迭代器**
 
 ```c++
 #include <iostream>
 #include <vector>
-using std::cout;
-using std::endl;
-using std::ostream;
-using std::istream;
-using std::vector;
+using namespace std;
 
 int main()
 {
+// 1.下标
 	vector<int> v1{ 1,2,3,4,5,6 };
 	for (size_t i = 0; i < v1.size(); i++)
 	{
@@ -78,6 +79,7 @@ int main()
 	}
 	cout << endl;
 
+// 2.迭代器
 	vector<int>::iterator it = v1.begin();
 	while (it != v1.end())
 	{
@@ -102,7 +104,7 @@ int main()
 	}
 	cout << endl;
 
-	vector<int>::reverse_iterator it4= v1.rbegin();
+	vector<int>::reverse_iterator it4 = v1.rbegin();
 	while (it4 != v1.rend())
 	{
 		cout << *it4 << " ";
@@ -139,15 +141,14 @@ int main()
 	v1.push_back(1);
 	v1.push_back(1);
 
-
 	cout << v1.size() << endl;
 	cout << v1.capacity() << endl;
 
-	v1.reserve(1000);
+	v1.reserve(1000);                // 预定1000个空间
 	cout << v1.size() << endl;
 	cout << v1.capacity() << endl;
 
-	v1.resize(10, 2);
+	v1.resize(10, 2);                // 有效元素为10个
 	cout << v1.size() << endl;
 	cout << v1.capacity() << endl;
 

@@ -81,6 +81,8 @@ int main()
 
 ## 2.2遍历
 
+**string的随机迭代器**
+
 ```c++
 #include <iostream>
 #include <string>
