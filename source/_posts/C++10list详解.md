@@ -295,6 +295,7 @@ namespace lic
 
 	// 2.iterator
 	// 迭代器里面存放了node*，然后对node*进行一系列操作。
+	// 迭代器的模板参数放了T ref ptr
 	template<class T, class Ref, class Ptr>
 	struct __list_iterator
 	{
@@ -305,15 +306,18 @@ namespace lic
 		// 迭代器
 		using Self = __list_iterator<T, Ref, Ptr>;
 
+		// 构造函数
 		__list_iterator(Node* node)
 			:_node(node)
 		{ }
 
+		// 返回迭代器的数据
 		Ref operator*()
 		{
 			return _node->_data;
 		}
 
+		// 返回迭代器的数据的指针
 		Ptr operator->()
 		{
 			return &_node->_data;

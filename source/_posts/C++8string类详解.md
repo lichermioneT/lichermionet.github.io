@@ -28,24 +28,22 @@ using namespace std;
 
 int main()
 {
-	string str1;
-	string str2("hello");
-	string str3(10, 'a');
+	string str1;            // 空构造
+	string str2("hello");   // 字符串构造
+	string str3(10, 'a');   // 10个a。 构造
 	string str4(str3);     // 拷贝构造
 	string str5 = "lic2";  // 临时对象，然后拷贝构造
 
 	string str6("hello", 2); // 提取两个  字符串是提取几个
 	string str7(str2, 2, 2); // 从2开始，然后取两个  string对象是提取后面的
 
-	cout << str1 << endl;
-	cout << str2 << endl;
-	cout << str3 << endl;
-	cout << str4 << endl;
-	cout << str5 << endl;
-	cout << str6 << endl;
-	cout << str7 << endl;
-
-	str1 = str5;
+	cout << "str1:" << str1 << endl;
+	cout << "str2:" << str2 << endl;
+	cout << "str3:" << str3 << endl;
+	cout << "str4:" << str4 << endl;
+	cout << "str5:" << str5 << endl;
+	cout << "str6:" << str6 << endl;
+	cout << "str7:" << str7 << endl;
 	return 0;
 }
 ```
@@ -82,6 +80,27 @@ int main()
 ## 2.2遍历
 
 **string的随机迭代器**
+
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main()
+{
+	string str1("lichermionex");
+	auto it = str1.begin();
+	for (int i = 0; i < str1.size(); ++i)
+	{
+		cout << *(it + i) << " ";
+	}
+	cout << endl;
+
+	return 0;
+}
+```
+
+**遍历操作**
 
 ```c++
 #include <iostream>
@@ -151,8 +170,6 @@ int main()
 		++str;
 	}
 	cout << endl;
-
-    
 
 	return 0;
 }
