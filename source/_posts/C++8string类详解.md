@@ -17,6 +17,8 @@ order: 8
 
 **C语言中，字符串是以'\0'结尾的一些字符的集合，为了操作方便，C标准库中提供了一些str系列的库函数， 但是这些库函数与字符串是分离开的，不太符合OOP的思想，而且底层空间需要用户自己管理，稍不留神可 能还会越界访问。**
 
+**面向对象：成员属性和成员方法，构成类，构成对象。**
+
 # 2. 标准库中的string类
 
 ## 2.1构造函数
@@ -33,9 +35,10 @@ int main()
 	string str3(10, 'a');   // 10个a。 构造
 	string str4(str3);     // 拷贝构造
 	string str5 = "lic2";  // 临时对象，然后拷贝构造
+	//string& str5 = "lic2";  // error
 
-	string str6("hello", 2); // 提取两个  字符串是提取几个
-	string str7(str2, 2, 2); // 从2开始，然后取两个  string对象是提取后面的
+	string str6("hello", 2); // 提取两个  字符串是从前面提取几个
+	string str7(str2, 2, 2); // 从2开始，然后取两个 string对象是提取后面的
 
 	cout << "str1:" << str1 << endl;
 	cout << "str2:" << str2 << endl;
@@ -192,8 +195,6 @@ int main()
 }
 ```
 
-
-
 ## 2.4容量
 
 ```c++
@@ -269,8 +270,8 @@ int main()
 	s += '1';
 	s += "234";
 
-	s.insert(s.begin(), 'z');
-	s.insert(0, "L"); // 注意字符串
+	s.insert(s.begin(), 'z'); // 注意迭代器是字符
+	s.insert(0, "L"); // 注意随机插入是字符串
 
 	cout << s << endl;
 	s.erase(2);
@@ -436,7 +437,7 @@ namespace lic
 			,_size(strlen(str))
 			,_capacity(strlen(str))
 		{
-			memcpy(_str, str, _size + 1);
+			memcpy(_str, str, _size + 1); // 斜杠零拷贝过来
 		}
 
 #if 0
