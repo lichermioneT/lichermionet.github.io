@@ -23,6 +23,16 @@
   --lic-border: rgba(103, 232, 249, 0.14);
 }
 
+/* 亮色页头：导航、副标题和下拉箭头都使用主题的 --light-grey。 */
+[data-theme="light"] #page-header:is(.full_page, .not-home-page) {
+  --light-grey: var(--anzhiyu-black);
+}
+
+[data-theme="light"] #page-header:is(.full_page, .not-home-page) #site-title {
+  color: var(--anzhiyu-black);
+  text-shadow: none;
+}
+
 /* 导航：轻量磨砂，滚动时仍保持清晰。 */
 #page-header.nav-fixed #nav,
 #page-header.not-top-img #nav {

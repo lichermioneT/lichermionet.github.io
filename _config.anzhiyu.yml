@@ -97,9 +97,9 @@ avatar:
   img: /img/avatar.jpg
   effect: false
 
-# 首页使用深色背景，其余页面保留默认渐变。
+# 首页页头与页面共用当前主题的背景色。
 disable_top_img: false
-index_img: "background: #18171d"
+index_img: "background: var(--anzhiyu-background)"
 default_top_img: "background: linear-gradient(135deg, #081426 0%, #123f75 48%, #0e7490 100%)"
 
 # 文章封面
