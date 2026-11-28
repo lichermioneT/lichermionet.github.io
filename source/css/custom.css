@@ -90,7 +90,12 @@
 }
 
 #home_top .banners-title-big {
+  font-size: 38px;
   text-align: center;
+}
+
+#home_top .banners-title-small {
+  margin-top: 12px;
 }
 
 #home_top #todayCard:not(.quote-card) {
@@ -113,6 +118,16 @@
 
 #todayCard.quote-card .archive-link {
   color: var(--font-color);
+}
+
+#todayCard.quote-card .banners-title {
+  inset-inline: 24px;
+  bottom: 26px;
+}
+
+#todayCard.quote-card .banners-title-small {
+  margin: auto 0 0;
+  line-height: 38px;
 }
 
 #todayCard .todayCard-cover {
