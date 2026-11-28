@@ -408,8 +408,6 @@ int main()
 
 # 3. string类的模拟实现
 
-
-
 ```c++
 #include <iostream>
 #include <string>
