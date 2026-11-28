@@ -449,9 +449,11 @@ lazyload:
 home_top:
   enable: true
   timemode: date
-  title: Lichermione
-  subTitle: blog
-  siteText: 人生天地之间，若白驹之过隙，忽然而已。
+  title:
+    - 人生天地之间
+    - 若白驹之过隙
+    - 忽然而已
+  siteText: licee.top
   category:
     - name: C++
       path: /categories/cpp/
@@ -499,7 +501,10 @@ home_top:
   banner:
     tips: 持续更新
     title: 文章归档
-    image: /img/archive-stargazer.webp
+    quote:
+      - 野马也
+      - 尘埃也
+      - 生物之以息相吹也
     link: /archives/
 
 # 视觉效果和附加功能
@@ -529,7 +534,7 @@ dynamicEffect:
 # 自定义样式更新时同步修改版本号，使浏览器重新获取 CSS。
 inject:
   head:
-    - <link rel="stylesheet" href="/css/custom.css?v=20261128-1">
+    - <link rel="stylesheet" href="/css/custom.css?v=20261128-4">
   bottom: []
 
 # 内部资源本地加载，减少对第三方 CDN 的依赖。
