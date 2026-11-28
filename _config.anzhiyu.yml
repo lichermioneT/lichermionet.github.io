@@ -526,10 +526,10 @@ dynamicEffect:
   postTopRollZoomInfo: false
   pageCommentsRollZoom: false
 
-# 加载自定义样式
+# 自定义样式更新时同步修改版本号，使浏览器重新获取 CSS。
 inject:
   head:
-    - <link rel="stylesheet" href="/css/custom.css">
+    - <link rel="stylesheet" href="/css/custom.css?v=20261128-1">
   bottom: []
 
 # 内部资源本地加载，减少对第三方 CDN 的依赖。
